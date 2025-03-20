@@ -1,0 +1,158 @@
+import sqlite3 as sql
+import bcrypt 
+from itsdangerous import URLSafeTimedSerializer
+from flask import current_app
+import datetime
+
+
+def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, niveau, pseudonyme, points, nbAction):
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+        now= datetime.datetime.now()
+        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service,niveau, pseudonyme, points, nbAction))
+        cur.execute("INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) VALUES (?,?,?,?,?,0)",(pseudonyme, email, type_user, password, now))
+        con.commit()
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        if con:
+            con.rollback()
+    finally:
+        if con:
+            con.close()
+
+def get_user_by_username(pseudo):
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+        cur.execute("SELECT * FROM Connexion WHERE pseudonyme = ?", (pseudo,))
+        user = cur.fetchone()
+        return user
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return None
+    finally:
+        if con:
+            con.close()
+
+def get_user_by_email(email):
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM Connexion WHERE email = ?", (email,))
+    user = cur.fetchone()
+    cur.close()
+    con.close()
+    return user
+
+def getUserInfos(username):
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+        cur.execute("SELECT * FROM Informations WHERE pseudonyme = ?", (username,))
+        user = cur.fetchone()  # Gets only one user.
+        cur.close()
+        con.close()  # Closes the connection.
+        if user:
+            return user
+        else:
+            return None
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return None
+    finally:
+        if 'con' in locals() and con:
+            con.close() 
+
+def getUserInfosPublic(username):
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+    cur.execute("SELECT nom, prenom, age, fonction, service, photo FROM Informations WHERE pseudonyme = ?", (username,))
+    user = cur.fetchone() #Gets only one user.
+    cur.close()
+    con.close() #closes the connection.
+    if user:
+        return user
+    else:
+        return None
+
+def hash_password(password):#cryptage du mdp
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+def check_password(password, hashed_password):#faire la correspondance avec le mot de passe saisi
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
+
+def generer_token_confirmation(email):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
+
+def verifier_token_confirmation(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(token, salt=current_app.config['SECURITY_PASSWORD_SALT'], max_age=expiration)
+    except Exception:
+        return False
+    return email
+
+def update_user(username, nom, prenom, age, genre, dateNaissance, photo, email, pseudonyme, niveau, points, nbAction):
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE users SET nom = ?, prenom = ?, age = ?, genre = ?, dateNaissance = ?, photo = ?, email = ?, pseudonyme = ?, niveau = ?, points = ?, nbAction = ?
+        WHERE username = ?
+    """, (nom, prenom, age, genre, dateNaissance, photo, email, pseudonyme, niveau, points, nbAction, username))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def confirmation_pseudo(pseudonyme):
+    con = sql.connect("donnees.db")
+    cur= con.cursor()
+    if pseudonyme==None:
+        return False
+    cur.execute("SELECT confirme FROM Connexion WHERE pseudonyme = ?", (pseudonyme,))
+    confirme=cur.fetchone()
+    cur.close()
+    con.close()
+    if confirme is not None and confirme[0] == 1: 
+        return True
+    else: 
+        return False
+
+def confirmation_email(email):
+    con = sql.connect("donnees.db")
+    cur= con.cursor()
+    if email==None:
+        return False
+    cur.execute("SELECT confirme FROM Connexion WHERE email = ?", (email,))
+    confirme=cur.fetchone()
+    cur.close()
+    con.close()
+    if confirme is not None and confirme[0] == 1:
+        return True
+    else: 
+        return False
+
+def  insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom,type_object, dernierReglage, consommationL, consommationW):
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+        cur.execute("INSERT INTO Objet (ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type, dernierReglage, consommationL, consommationW) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom,type_object, dernierReglage, consommationL, consommationW))
+        con.commit()
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        if con:
+            con.rollback()
+    finally:
+        if con:
+            con.close()
+
+def get_user_type(pseudonyme):
+    con = sql.connect("donnees.db")
+    cur= con.cursor()
+    if pseudonyme==None:
+        return 0
+    cur.execute("SELECT type FROM Informations WHERE pseudonyme = ? OR email= ?", (pseudonyme,pseudonyme))
+    type_user=cur.fetchone()
+    cur.close()
+    con.close()
+    return type_user

@@ -1,0 +1,59 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{url_for('static', filename='dist/css/style.css')}}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page de connexion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/index.css') }}">
+
+</head>
+
+<body>
+    <div class="formulaire-de-connexion">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <h3>Bienvenue sur le portail</h3>
+        <h4>Merci de vous connecter.</h4>
+        <h5>Veuillez choisir votre mode de connexion</h5>
+        <form method="post" id="form">
+            <label>Adresse email<input type="radio" value="email" checked name="choix-connexion"
+                    onclick="choixemail()"></label>
+            <label>Pseudonyme<input type="radio" value="pseudo" name="choix-connexion" onclick="choixpseudo()"></label>
+            <br>
+            <div id="inputArea">
+                Adresse email: <input type="email" name="email" id="email">
+            </div>
+            <br>
+            <label>
+                Mot de passe: <input type="password" name="password" id="password">
+            </label>
+            <br>
+            <label>
+                simple: <input type="radio" value="1" name="type">
+            </label>
+            <label>
+                complexe: <input type="radio" value="2" name="type">
+            </label>
+            <label>
+                administrateur: <input type="radio" value="3" name="type">
+            </label>
+            <br>
+            <button type="submit" id="cobutton">Se connecter</button>
+        </form>
+        <a href="creation.html"><button name="create-account">Creer un compte</button></a>
+        <a href="{{ url_for('accueil') }}"><button name="continue">Continuer sans se connecter</button></a>
+    </div>
+
+
+    <script src="{{url_for('static', filename='dist/js/script.js')}}"></script>
+</body>
+
+</html>

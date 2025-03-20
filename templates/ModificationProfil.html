@@ -1,0 +1,78 @@
+<!-- edit_profile.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modification de votre profil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/ModificationProfil.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Modifier votre profil</h2>
+            <form method="POST">
+                <div class="input-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" name="nom" value="{{ user[1] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" name="prenom" value="{{ user[2] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="age">Âge</label>
+                    <input type="number" id="age" name="age" value="{{ user[3] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="genre">Genre</label>
+                    <input type="text" id="genre" name="genre" value="{{ user[4] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="dateNaissance">Date de naissance</label>
+                    <input type="date" id="dateNaissance" name="dateNaissance" value="{{ user[5] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="photo">Photo</label>
+                    <input type="text" id="photo" name="photo" value="{{ user[6] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ user[7] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="pseudonyme">Pseudonyme</label>
+                    <input type="text" id="pseudonyme" name="pseudonyme" value="{{ user[8] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="niveau">Niveau</label>
+                    <input type="text" id="niveau" name="niveau" value="{{ user[9] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="points">Points</label>
+                    <input type="number" id="points" name="points" value="{{ user[10] }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="nbAction">Nombre d'actions</label>
+                    <input type="number" id="nbAction" name="nbAction" value="{{ user[11] }}" required>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit" class="submit-button">Mettre à jour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

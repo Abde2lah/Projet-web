@@ -1,0 +1,286 @@
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_mail import Mail, Message
+import sqlite3 as sql
+import bcrypt
+from config import Config
+from models import get_user_by_email, get_user_by_username, getUserInfos, insert_user, update_user, getUserInfosPublic, generer_token_confirmation, verifier_token_confirmation, confirmation_pseudo, confirmation_email, insert_object, get_user_type
+
+app = Flask(__name__)
+app.config.from_object(Config)
+app.secret_key = 'your_secret_key'  # A changer pour la sécurité
+mail = Mail(app)
+
+# Route de Connexion
+@app.route('/', methods=['POST', 'GET'])
+def connexion():#connexion au site
+    if request.method == 'POST':
+        pseudo = request.form.get('pseudo', '') 
+        email = request.form.get('email', '') 
+        password = request.form['password'].encode('utf-8')  # Encode mdp
+        user_type = request.form['type']
+        
+        if pseudo:
+            user = get_user_by_username(pseudo)
+            username = pseudo
+        else:
+            user = get_user_by_email(email)
+            username = email
+
+        if user and bcrypt.checkpw(password, user[3]):
+            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmée
+                session['username'] = user[0] 
+                print(f"Username in session: {session.get('username')}")
+                return redirect(url_for('accueil'))  
+            elif confirmation_email(email):
+                session['username'] = user[0]  # Save user session
+                print(f"Username in session: {session.get('username')}")
+                return redirect(url_for('accueil'))  
+            
+            else:
+                flash('Veuillez confirmer votre email')
+                return render_template('index.html')
+        else:
+            flash("Mot de passe ou identifiant incorrect")
+            return render_template('index.html') 
+    else:
+        return render_template('index.html')  # Default form for login
+
+
+# Route de l'Accueil
+@app.route('/accueil')
+def accueil():#accueil accessible pour tous les utilisateurs
+    return render_template('accueil.html')
+
+
+# Route du Profil
+@app.route('/profile')
+def profile(): #redirige vers le profil privé de l'utilisateur
+    if 'username' in session:
+        user_info = getUserInfos(session['username'])  
+        if user_info:
+            return render_template('profil.html', user=user_info)  
+        else:
+            return "Utilisateur non trouvé" 
+    else:
+        return redirect(url_for('connexion'))  
+
+
+# Fonction d'envoi de mail de confirmation
+def envoyer_email_confirmation(destinataire, nom_utilisateur):
+    try:
+        token = generer_token_confirmation(destinataire)
+        lien_confirmation = url_for('confirmer_compte', token=token, _external=True) # _external=True pour avoir l'URL complète
+
+        msg = Message('Confirmation de compte', sender='testgroupe3cytech@gmail.com', recipients=[destinataire])
+        msg.html = render_template('email_confirmation.html', nom_utilisateur=nom_utilisateur, lien_confirmation=lien_confirmation) # Utilise un template HTML
+        mail.send(msg)
+        print("Email de confirmation envoyé !")
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email : {e}")
+
+
+# Route de Création de Profil
+@app.route('/creation.html', methods=['GET', 'POST'])
+def creer_profil(): #créer un profil
+    if request.method == 'POST':
+        # Récupération des informations du formulaire
+        nom = request.form['nom']
+        prenom = request.form['prenom']
+        age = request.form['age']
+        genre = request.form['genre']
+        dateNaissance = request.form['dateNaissance']
+        photo = request.form['photo']
+        email = request.form['email']
+        fonction = request.form['fonction']
+        pseudonyme = request.form['pseudonyme']
+        mot_de_passe = request.form['mot_de_passe']
+        type_user = request.form['type']
+        niveau = request.form['niveau']
+        points = request.form['points'] #à supprimer
+        nbAction = request.form['nbAction'] #à supprimer
+        service = request.form['service'] #à supprimer
+
+        # Hachage du mot de passe avant insertion
+        hashed_password = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
+
+        # Insertion dans la base de données
+        insert_user(nom, prenom, age, genre, email,	dateNaissance, type_user, hashed_password, photo, fonction, service,niveau, pseudonyme,	points, nbAction)
+        envoyer_email_confirmation(email, pseudonyme)
+        return redirect(url_for('connexion'))  # Redirection vers le profil
+
+    return render_template('creation.html')  # Affichage du formulaire de création de profil
+
+
+# Route de Déconnexion
+@app.route('/logout')
+def logout():
+    session.pop('username', None)  # Supprime la session de l'utilisateur
+    return redirect(url_for('connexion'))  # Redirige vers la page de connexion
+
+
+# Route d'Édition du Profil
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if 'username' in session:
+        user_info = getUserInfos(session['username'])  # Get user info
+
+        if request.method == 'POST':
+            # Récupération des nouvelles informations du formulaire
+            nom = request.form['nom']
+            prenom = request.form['prenom']
+            age = request.form['age']
+            genre = request.form['genre']
+            dateNaissance = request.form['dateNaissance']
+            photo = request.form['photo']
+            email = request.form['email']
+            pseudonyme = request.form['pseudonyme']
+            niveau = request.form['niveau']
+            points = request.form['points']
+            nbAction = request.form['nbAction']
+
+            # Mise à jour des informations de l'utilisateur dans la base de données
+            update_user(session['username'], nom, prenom, age, genre, dateNaissance, photo, email, pseudonyme, niveau, points, nbAction)
+
+            return redirect(url_for('profile'))  # Redirige vers la page de profil après modification
+
+        return render_template('edit_profile.html', user=user_info)  # Affiche le formulaire d'édition avec les données actuelles
+    else:
+        return redirect(url_for('connexion'))  # Redirige vers la page de connexion si l'utilisateur n'est pas connecté
+
+@app.route('/search', methods=['GET'])
+def search(): #recherche de l'accueil avec filtres
+
+    search_query = request.args.get('search-input')
+    service_filter = request.args.get('service-filter')  #filtre de service
+    function_filter = request.args.get('fonction-filter') # filtre de fonction
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+
+    sql_query = "SELECT nom, prenom, fonction, service, pseudonyme FROM Informations WHERE 1=1"
+
+    params = []
+
+    if search_query:
+        sql_query += " AND (nom LIKE ? OR service LIKE ?)"
+        params.extend(['%' + search_query + '%', '%' + search_query + '%'])
+    if service_filter:
+        sql_query += " AND service = ?"
+        params.append(service_filter)
+
+    if function_filter:
+        sql_query += " AND fonction = ?"
+        params.append(function_filter)
+
+    cur.execute(sql_query, params)
+    results = cur.fetchall()
+    con.close()
+
+    return render_template('resultats.html', results=results, query=search_query)
+    
+@app.route('/accueil_objets')
+def accueil_objets():#portail des objets connectés
+    if 'username' in session:
+        return render_template('accueil_objets.html')
+    else:
+        flash('Veuillez vous connecter pour accéder à cette page')
+        return redirect(url_for('connexion'))
+    
+
+@app.route('/search_objets', methods=['GET'])
+def search_objets():#fonction de recherche des objets
+    search_query = request.args.get('search-input')
+    service_filter = request.args.get('service-filter')  #filtre de service
+    type_filter = request.args.get('type-filter') # filtre de type
+    marque_filter = request.args.get('marque-filter') #filtre de marque
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+
+    sql_query = "SELECT * FROM Objet WHERE 1=1" #technique pour ajouter une condition
+
+    params = []
+
+    if search_query:
+        sql_query += " AND (ID LIKE ? OR nom LIKE ?)"
+        params.extend(['%' + search_query + '%'], ['%' + search_query + '%'])
+
+    if service_filter:
+        sql_query += " AND service = ?"
+        params.append(service_filter)
+
+    if type_filter:
+        sql_query += " AND type = ?"
+        params.append(type_filter)
+    
+    if marque_filter:
+        sql_query += " AND marque = ?"
+        params.append(marque_filter)
+
+    cur.execute(sql_query, params)
+    results = cur.fetchall()
+    con.close()
+
+    return render_template('resultats-objets.html', results=results, query=search_query)
+
+@app.route('/ajout-objet.html', methods=['POST','GET'])
+def creer_objet(): #fonction pour ajouter un objet connecté
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)
+    if user_type[0] < 2:
+        flash('Accès non autorisé')
+        return redirect(url_for('connexion'))
+    if request.method == 'POST' and 'username' in session:
+        # Récupération des informations du formulaire
+        ID = request.form['ID']
+        tempActuelle = request.form['tempActuelle']
+        tempCible = request.form['tempCible']
+        mode = request.form['mode']
+        connectivite = request.form['connectivite']
+        batterie = request.form['batterie']
+        service = request.form['service']
+        marque = request.form['marque']
+        nom = request.form['nom']
+        type_object = request.form['type']
+        dernierReglage = request.form['dernierReglage']
+        consommationL  = request.form['ConsommationL']
+        consommationW = request.form['ConsommationW']
+
+        # Insertion dans la base de données
+        insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type_object, dernierReglage,consommationL, consommationW)
+        
+        return redirect(url_for('accueil_objets'))
+
+    return render_template('ajout-objet.html') 
+
+@app.route('/profil/<string:pseudonyme>')
+def profilPublic(pseudonyme): #fonction permettant d'afficher le profil publique
+    # Récupère les informations du profil à partir de l'ID
+    user_profile = getUserInfosPublic(pseudonyme)
+    if user_profile:
+        return render_template('profilPublic.html', profile=user_profile)
+    else:
+        return "Profil non trouvé"
+
+@app.route('/confirmer/<token>')
+def confirmer_compte(token):#fonction qui permet de générer le token de confirmation et met à jour la base de donnée pour la confirmation
+    email = verifier_token_confirmation(token)
+    if email:
+        try:
+            con = sql.connect("donnees.db")
+            cur = con.cursor()
+            cur.execute("UPDATE Connexion SET confirme = 1 WHERE email = ?", (email,))
+            con.commit()
+            
+        except Exception as e:
+            print(f"Erreur lors de la mise à jour de la base de données : {e}")
+            
+        finally:
+            con.close()
+        return redirect(url_for('connexion'))
+    else:
+        
+        return redirect(url_for('creer_profil'))
+
+if __name__ == '__main__':
+    app.run(debug=True, host='127.0.0.1')

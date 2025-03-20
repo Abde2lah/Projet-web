@@ -1,0 +1,112 @@
+/* Style général */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f8fb; /* Bleu clair apaisant */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Conteneur du formulaire */
+.formulaire-de-connexion {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 500px;
+    max-width: 90%;
+}
+
+/* Titres */
+h3 {
+    color: #007bff;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h4, h5 {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+/* Formulaire */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels et Inputs */
+label {
+    font-weight: bold;
+    display: block;
+    text-align: left;
+    margin-top: 12px;
+}
+
+input[type="email"], 
+input[type="password"], 
+input[type="text"] {
+    padding: 12px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+/* Ajustement des radios */
+label input[type="radio"] {
+    margin-left: 10px;
+}
+
+/* Conteneur des boutons */
+.boutons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Boutons */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Boutons secondaires */
+.boutons-container a button {
+    background-color: #28a745;
+}
+
+.boutons-container a button:hover {
+    background-color: #218838;
+}
+
+/* Espacement entre les boutons */
+.boutons-container a, .boutons-container button {
+    flex: 1;
+    margin: 0 5px;
+}
+
+/* Ajustement pour les grands écrans */
+@media (min-width: 768px) {
+    .formulaire-de-connexion {
+        width: 600px;
+    }
+}
