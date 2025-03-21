@@ -12,7 +12,7 @@ mail = Mail(app)
 
 # Route de Connexion
 @app.route('/', methods=['POST', 'GET'])
-def connexion():#connexion au site
+def connexion():#connexion au site web
     if request.method == 'POST':
         pseudo = request.form.get('pseudo', '') 
         email = request.form.get('email', '') 
