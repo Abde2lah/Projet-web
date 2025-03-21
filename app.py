@@ -262,7 +262,7 @@ def profilPublic(pseudonyme): #fonction permettant d'afficher le profil publique
         return "Profil non trouvé"
 
 @app.route('/confirmer/<token>')
-def confirmer_compte(token):#fonction qui permet de générer le token de confirmation et met à jour la base de donnée pour la confirmation
+def confirmer_compte(token): #fonction qui permet de générer le token de confirmation et met à jour la base de donnée pour la confirmation
     email = verifier_token_confirmation(token)
     if email:
         try:
