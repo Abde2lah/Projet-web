@@ -27,7 +27,7 @@ def connexion():#connexion au site
             username = email
 
         if user and bcrypt.checkpw(password, user[3]):
-            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmée
+            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmé
                 session['username'] = user[0] 
                 print(f"Username in session: {session.get('username')}")
                 return redirect(url_for('accueil'))  
@@ -220,7 +220,6 @@ def search_objets():#fonction de recherche des objets
     cur.execute(sql_query, params)
     results = cur.fetchall()
     con.close()
-
     return render_template('resultats-objets.html', results=results, query=search_query)
 
 @app.route('/ajout-objet.html', methods=['POST','GET'])
