@@ -3,7 +3,7 @@ from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
 from config import Config
-from models import get_user_by_email, get_user_by_username, getUserInfos, insert_user, update_user, getUserInfosPublic, generer_token_confirmation, verifier_token_confirmation, confirmation_pseudo, confirmation_email, insert_object, get_user_type
+from models import get_user_by_email, get_user_by_username, getUserInfos, insert_user, update_user, getUserInfosPublic, generer_token_confirmation, verifier_token_confirmation, confirmation_pseudo, confirmation_email, insert_object, get_user_type, update_user_points
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -12,7 +12,7 @@ mail = Mail(app)
 
 # Route de Connexion
 @app.route('/', methods=['POST', 'GET'])
-def connexion():#connexion au site web
+def connexion():#connexion au site
     if request.method == 'POST':
         pseudo = request.form.get('pseudo', '') 
         email = request.form.get('email', '') 
@@ -27,7 +27,7 @@ def connexion():#connexion au site web
             username = email
 
         if user and bcrypt.checkpw(password, user[3]):
-            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmé
+            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmée
                 session['username'] = user[0] 
                 print(f"Username in session: {session.get('username')}")
                 return redirect(url_for('accueil'))  
@@ -49,7 +49,11 @@ def connexion():#connexion au site web
 # Route de l'Accueil
 @app.route('/accueil')
 def accueil():#accueil accessible pour tous les utilisateurs
-    return render_template('accueil.html')
+    if 'username' in session:
+        connecte=True
+    else:
+        connecte=False
+    return render_template('accueil.html', connecte = connecte)
 
 
 # Route du Profil
@@ -95,16 +99,15 @@ def creer_profil(): #créer un profil
         pseudonyme = request.form['pseudonyme']
         mot_de_passe = request.form['mot_de_passe']
         type_user = request.form['type']
-        niveau = request.form['niveau']
-        points = request.form['points'] #à supprimer
-        nbAction = request.form['nbAction'] #à supprimer
-        service = request.form['service'] #à supprimer
+        #points = request.form['points'] #à supprimer
+        #nbAction = request.form['nbAction'] #à supprimer
+        service = request.form['service']
 
         # Hachage du mot de passe avant insertion
         hashed_password = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
 
         # Insertion dans la base de données
-        insert_user(nom, prenom, age, genre, email,	dateNaissance, type_user, hashed_password, photo, fonction, service,niveau, pseudonyme,	points, nbAction)
+        insert_user(nom, prenom, age, genre, email,	dateNaissance, type_user, hashed_password, photo, fonction, service, pseudonyme)
         envoyer_email_confirmation(email, pseudonyme)
         return redirect(url_for('connexion'))  # Redirection vers le profil
 
@@ -134,9 +137,9 @@ def edit_profile():
             photo = request.form['photo']
             email = request.form['email']
             pseudonyme = request.form['pseudonyme']
-            niveau = request.form['niveau']
-            points = request.form['points']
-            nbAction = request.form['nbAction']
+            #niveau = request.form['niveau']
+            #points = request.form['points']
+            #nbAction = request.form['nbAction']
 
             # Mise à jour des informations de l'utilisateur dans la base de données
             update_user(session['username'], nom, prenom, age, genre, dateNaissance, photo, email, pseudonyme, niveau, points, nbAction)
@@ -219,7 +222,10 @@ def search_objets():#fonction de recherche des objets
 
     cur.execute(sql_query, params)
     results = cur.fetchall()
+    pseudonyme = session['username']
+    update_user_points(pseudonyme, 1)
     con.close()
+
     return render_template('resultats-objets.html', results=results, query=search_query)
 
 @app.route('/ajout-objet.html', methods=['POST','GET'])
@@ -247,7 +253,7 @@ def creer_objet(): #fonction pour ajouter un objet connecté
 
         # Insertion dans la base de données
         insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type_object, dernierReglage,consommationL, consommationW)
-        
+        update_user_points(pseudonyme, 2)
         return redirect(url_for('accueil_objets'))
 
     return render_template('ajout-objet.html') 
@@ -262,7 +268,7 @@ def profilPublic(pseudonyme): #fonction permettant d'afficher le profil publique
         return "Profil non trouvé"
 
 @app.route('/confirmer/<token>')
-def confirmer_compte(token): #fonction qui permet de générer le token de confirmation et met à jour la base de donnée pour la confirmation
+def confirmer_compte(token):#fonction qui permet de générer le token de confirmation et met à jour la base de donnée pour la confirmation
     email = verifier_token_confirmation(token)
     if email:
         try:
