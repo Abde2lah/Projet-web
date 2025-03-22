@@ -5,12 +5,12 @@ from flask import current_app
 import datetime
 
 
-def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, niveau, pseudonyme, points, nbAction):
+def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme):
     try:
         con = sql.connect("donnees.db")
         cur = con.cursor()
         now= datetime.datetime.now()
-        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service,niveau, pseudonyme, points, nbAction))
+        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme))
         cur.execute("INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) VALUES (?,?,?,?,?,0)",(pseudonyme, email, type_user, password, now))
         con.commit()
     except sql.Error as e:
@@ -156,3 +156,34 @@ def get_user_type(pseudonyme):
     cur.close()
     con.close()
     return type_user
+
+def update_user_points(pseudonyme, nbPoints):
+    con = sql.connect("donnees.db")
+    cur= con.cursor()
+    if pseudonyme==None:
+        return 0
+    cur.execute("UPDATE Informations SET points=points + ? wHERE pseudonyme = ? OR email= ?", (nbPoints, pseudonyme,pseudonyme))
+    con.commit()
+    update_user_level(pseudonyme)
+    cur.close()
+    con.close()
+
+def update_user_level(pseudonyme):
+    con = sql.connect("donnees.db")
+    cur= con.cursor()
+    if pseudonyme==None:
+        return 0
+    cur.execute("SELECT points FROM Informations WHERE pseudonyme = ? OR email = ?", (pseudonyme, pseudonyme))
+    points=cur.fetchone()
+    if points[0] >=6 and points[0] < 10:
+        cur.execute("UPDATE Informations SET Niveau = 1 WHERE pseudonyme = ? OR email = ?", (pseudonyme, pseudonyme))
+        con.commit()
+    if points[0] >=10 and points[0] < 14:
+        cur.execute("UPDATE Informations SET Niveau = 2 WHERE pseudonyme = ? OR email = ?", (pseudonyme, pseudonyme))
+        con.commit()
+    if points[0] >=14:
+        cur.execute("UPDATE Informations SET Niveau = 3 WHERE pseudonyme = ? OR email = ?", (pseudonyme, pseudonyme))
+        con.commit()
+
+    cur.close()
+    con.close()   
