@@ -28,8 +28,22 @@
         <p><strong>Pseudonyme:</strong> {{ user[12] }}</p>
         <p><strong>Fonction:</strong> {{ user[9] }}</p>
         <p><strong>Service:</strong> {{ user[10] }}</p>
-        <p><strong>Niveau :</strong> {{ user[11] }}</p>
-        <p>(débutant: 0, intermédiaire: 1, Avancé: 2, Expert: 3)</p>
+        
+        <!-- Affichage du niveau avec conditions -->
+        <p><strong>Niveau :</strong> 
+            {% if user[11] == 0 %}
+                Débutant
+            {% elif user[11] == 1 %}
+                Intermédiaire
+            {% elif user[11] == 2 %}
+                Avancé
+            {% elif user[11] == 3 %}
+                Expert
+            {% else %}
+                Niveau inconnu
+            {% endif %}
+        </p>
+
         <!-- Affichage des points -->
         <p><strong>Points:</strong> {{ user[13] }}</p>
 
