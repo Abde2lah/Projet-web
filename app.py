@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_mail import Mail, Message
 import sqlite3 as sql
@@ -12,7 +13,7 @@ mail = Mail(app)
 
 # Route de Connexion
 @app.route('/', methods=['POST', 'GET'])
-def connexion():#connexion au site
+def connexion():  # Connexion au site
     if request.method == 'POST':
         pseudo = request.form.get('pseudo', '') 
         email = request.form.get('email', '') 
@@ -27,13 +28,15 @@ def connexion():#connexion au site
             username = email
 
         if user and bcrypt.checkpw(password, user[3]):
-            if confirmation_pseudo(pseudo):#verifie si l'email a été confirmée
+            if confirmation_pseudo(pseudo):  # Vérifie si le pseudonyme a été confirmé
                 session['username'] = user[0] 
                 print(f"Username in session: {session.get('username')}")
+                update_user_points(username, 0.5)  # Incrémente les points de 0.5 lors de la connexion
                 return redirect(url_for('accueil'))  
-            elif confirmation_email(email):
-                session['username'] = user[0]  # Save user session
+            elif confirmation_email(email):  # Vérifie si l'email a été confirmé
+                session['username'] = user[0]  # Enregistre la session de l'utilisateur
                 print(f"Username in session: {session.get('username')}")
+                update_user_points(username, 0.5)  # Incrémente les points de 0.5 lors de la connexion
                 return redirect(url_for('accueil'))  
             
             else:
@@ -43,7 +46,7 @@ def connexion():#connexion au site
             flash("Mot de passe ou identifiant incorrect")
             return render_template('index.html') 
     else:
-        return render_template('index.html')  # Default form for login
+        return render_template('index.html')  # Formulaire par défaut pour la connexion
 
 
 # Route de l'Accueil

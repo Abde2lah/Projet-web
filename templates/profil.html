@@ -17,13 +17,22 @@
         <p><strong>Email:</strong> {{ user[4] }}</p>
         <p><strong>Type:</strong> {{ user[6] }}</p>
         <p><strong>Date de naissance :</strong> {{ user[5] }}</p>
-        <p><strong>Photo:</strong> <img src="{{ user[8] }}" alt="Photo de profil" class="img-fluid" style="max-width: 150px; border-radius: 8px;"></p>
+        
+        <!-- Affichage de l'image de profil -->
+        <p><strong>Photo:</strong></p>
+        <img src="{{ user[8] if user[8] else url_for('static', filename='images/default .png') }}" 
+        alt="Photo de profil" 
+        class="img-fluid" 
+        style="max-width: 150px; border-radius: 8px;">
+        
         <p><strong>Pseudonyme:</strong> {{ user[12] }}</p>
         <p><strong>Fonction:</strong> {{ user[9] }}</p>
         <p><strong>Service:</strong> {{ user[10] }}</p>
         <p><strong>Niveau :</strong> {{ user[11] }}</p>
         <p>(débutant: 0, intermédiaire: 1, Avancé: 2, Expert: 3)</p>
-        <p><strong>Nombre de points:</strong>{{ user[13] }}</p>
+        <!-- Affichage des points -->
+        <p><strong>Points:</strong> {{ user[13] }}</p>
+
         <a href="{{ url_for('logout') }}" class="btn btn-danger">Se déconnecter</a>
     </div>
 
