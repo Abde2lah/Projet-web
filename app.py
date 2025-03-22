@@ -72,6 +72,23 @@ def profile(): #redirige vers le profil privé de l'utilisateur
         return redirect(url_for('connexion'))  
 
 
+
+
+@app.route("/profil/<nom>")
+def profil(nom):
+    conn = sql.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Informations WHERE nom = ?", (nom,))
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        return render_template("profil.html", user=user)
+    else:
+        return "Utilisateur non trouvé", 404
+
+
+
 # Fonction d'envoi de mail de confirmation
 def envoyer_email_confirmation(destinataire, nom_utilisateur):
     try:
@@ -289,6 +306,17 @@ def confirmer_compte(token):#fonction qui permet de générer le token de confir
     else:
         
         return redirect(url_for('creer_profil'))
+    
+@app.route("/utilisateurs")
+def liste_utilisateurs():  
+    conn = sql.connect("donnees.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT nom, prenom, email FROM Informations")  # Récupérer email
+    users = cursor.fetchall()
+    conn.close()
+    user_email = session.get("user_email", "Utilisateur inconnu")
+    return render_template("utilisateurs.html", users=users, user_email=user_email)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')

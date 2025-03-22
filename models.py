@@ -187,3 +187,11 @@ def update_user_level(pseudonyme):
 
     cur.close()
     con.close()   
+
+def get_user_by_nom(nom):
+    conn = sql.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Informations WHERE nom = ?", (nom,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
