@@ -4,7 +4,7 @@ from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
 from config import Config
-from models import get_user_by_email, get_user_by_username, getUserInfos, insert_user, update_user, getUserInfosPublic, generer_token_confirmation, verifier_token_confirmation, confirmation_pseudo, confirmation_email, insert_object, get_user_type, update_user_points
+from models import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -250,14 +250,20 @@ def search_objets():#fonction de recherche des objets
 
     return render_template('resultats-objets.html', results=results, query=search_query)
 
-@app.route('/ajout-objet.html', methods=['POST','GET'])
-def creer_objet(): #fonction pour ajouter un objet connecté
+@app.route('/ajout-objet.html', methods=['POST', 'GET'])
+def creer_objet():
+    if "username" not in session:
+        flash("Veuillez vous connecter.")
+        return redirect(url_for("connexion"))
+
     pseudonyme = session['username']
     user_type = get_user_type(pseudonyme)
+
     if user_type[0] < 2:
         flash('Accès non autorisé')
         return redirect(url_for('connexion'))
-    if request.method == 'POST' and 'username' in session:
+
+    if request.method == 'POST':
         # Récupération des informations du formulaire
         ID = request.form['ID']
         tempActuelle = request.form['tempActuelle']
@@ -270,15 +276,20 @@ def creer_objet(): #fonction pour ajouter un objet connecté
         nom = request.form['nom']
         type_object = request.form['type']
         dernierReglage = request.form['dernierReglage']
-        consommationL  = request.form['ConsommationL']
+        consommationL = request.form['ConsommationL']
         consommationW = request.form['ConsommationW']
 
-        # Insertion dans la base de données
-        insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type_object, dernierReglage,consommationL, consommationW)
+        # Insérer l'objet dans la BDD
+        insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type_object, dernierReglage, consommationL, consommationW)
+
+        # Mettre à jour les points et les actions de l'utilisateur
         update_user_points(pseudonyme, 2)
+        increment_user_actions(pseudonyme)  # 🔥 Ajout du compteur d'actions
+
+        flash("Objet ajouté avec succès !")
         return redirect(url_for('accueil_objets'))
 
-    return render_template('ajout-objet.html') 
+    return render_template('ajout-objet.html')
 
 @app.route('/profil/<string:pseudonyme>')
 def profilPublic(pseudonyme): #fonction permettant d'afficher le profil publique

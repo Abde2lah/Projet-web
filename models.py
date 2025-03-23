@@ -201,3 +201,24 @@ def get_user_by_nom(nom):
     user = cursor.fetchone()
     conn.close()
     return user
+
+
+def increment_user_actions(pseudonyme):
+    """Incrémente le nombre d'actions de l'utilisateur."""
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+
+        cur.execute("""
+            UPDATE Informations 
+            SET nbAction = nbAction + 1 
+            WHERE pseudonyme = ?
+        """, (pseudonyme,))
+
+        con.commit()
+    except Exception as e:
+        print(f"Erreur lors de l'incrémentation du nbAction : {e}")
+        con.rollback()
+    finally:
+        cur.close()
+        con.close()
