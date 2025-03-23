@@ -74,11 +74,11 @@ def profile(): #redirige vers le profil privé de l'utilisateur
 
 
 
-@app.route("/profil/<nom>")
-def profil(nom):
-    conn = sql.connect("database.db")
+@app.route("/profil/<pseudonyme>")
+def profil(pseudonyme):
+    conn = sql.connect("donnees.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Informations WHERE nom = ?", (nom,))
+    cursor.execute("SELECT * FROM Informations WHERE pseudonyme = ?", (pseudonyme,))
     user = cursor.fetchone()
     conn.close()
 
@@ -86,6 +86,7 @@ def profil(nom):
         return render_template("profil.html", user=user)
     else:
         return "Utilisateur non trouvé", 404
+
 
 
 
@@ -311,11 +312,15 @@ def confirmer_compte(token):#fonction qui permet de générer le token de confir
 def liste_utilisateurs():  
     conn = sql.connect("donnees.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT nom, prenom, email FROM Informations")  # Récupérer email
+    cursor.execute("""
+        SELECT nom, prenom, age, genre, email, dateNaissance, type, photo, fonction, service, niveau, pseudonyme, points, nbAction 
+        FROM Informations
+    """)
     users = cursor.fetchall()
     conn.close()
-    user_email = session.get("user_email", "Utilisateur inconnu")
-    return render_template("utilisateurs.html", users=users, user_email=user_email)
+    # Vérifier que le pseudo est bien défini dans la session
+    user_pseudo = session.get("user_pseudo", "Utilisateur inconnu")
+    return render_template("utilisateurs.html", users=users, user_pseudo=user_pseudo)
 
 
 if __name__ == '__main__':
