@@ -10,7 +10,7 @@
     <div class="container mt-5">
         <h2 class="text-center">Liste des utilisateurs</h2>
         <table class="table table-bordered table-striped">
-            <thead>
+            <thead class="table-dark">
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
@@ -26,6 +26,8 @@
                     <th>Pseudonyme</th>
                     <th>Points</th>
                     <th>Actions</th>
+                    <th>Connexions</th>
+                    <th>Profil</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,6 +61,8 @@
                     </td> <!-- Niveau -->
                     <td><strong>{{ user[11] }}</strong></td> <!-- Pseudonyme -->
                     <td>{{ user[12] }}</td> <!-- Points -->
+                    <td>{{ user[13] }}</td> <!-- Nombre d'actions -->
+                    <td>{{ user[14] }}</td> <!-- Nombre de connexions -->
                     <td>
                         <a href="{{ url_for('profil', pseudonyme=user[11]) }}" class="btn btn-info btn-sm">Voir Profil</a>
                     </td>

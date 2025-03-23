@@ -41,6 +41,7 @@ CREATE TABLE Informations (
     pseudonyme VARCHAR(50) PRIMARY KEY,
     points INT,
     nbAction INT,
+    nbAcces INT,
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 

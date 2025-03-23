@@ -32,11 +32,12 @@ def connexion():  # Connexion au site
                 session['username'] = user[0] 
                 print(f"Username in session: {session.get('username')}")
                 update_user_points(username, 0.5)  # Incrémente les points de 0.5 lors de la connexion
+
                 return redirect(url_for('accueil'))  
             elif confirmation_email(email):  # Vérifie si l'email a été confirmé
                 session['username'] = user[0]  # Enregistre la session de l'utilisateur
                 print(f"Username in session: {session.get('username')}")
-                update_user_points(username, 0.5)  # Incrémente les points de 0.5 lors de la connexion
+                update_user_points(username, 0.5,1)  # Incrémente les points de 0.5 lors de la connexion et de 1 pour l'acces au site
                 return redirect(url_for('accueil'))  
             
             else:
@@ -309,18 +310,20 @@ def confirmer_compte(token):#fonction qui permet de générer le token de confir
         return redirect(url_for('creer_profil'))
     
 @app.route("/utilisateurs")
-def liste_utilisateurs():  
+def liste_utilisateurs():
     conn = sql.connect("donnees.db")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT nom, prenom, age, genre, email, dateNaissance, type, photo, fonction, service, niveau, pseudonyme, points, nbAction 
+        SELECT nom, prenom, age, genre, email, dateNaissance, type, 
+               photo, fonction, service, niveau, pseudonyme, 
+               points, nbAction, nbAcces 
         FROM Informations
-    """)
+    """)  # Vérifie bien que nbAcces est inclus !
     users = cursor.fetchall()
     conn.close()
-    # Vérifier que le pseudo est bien défini dans la session
-    user_pseudo = session.get("user_pseudo", "Utilisateur inconnu")
-    return render_template("utilisateurs.html", users=users, user_pseudo=user_pseudo)
+
+    return render_template("utilisateurs.html", users=users)
+
 
 
 if __name__ == '__main__':

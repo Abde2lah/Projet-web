@@ -10,7 +10,7 @@ def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, passw
         con = sql.connect("donnees.db")
         cur = con.cursor()
         now= datetime.datetime.now()
-        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme))
+        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction,nbAcces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0,0)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme))
         cur.execute("INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) VALUES (?,?,?,?,?,0)",(pseudonyme, email, type_user, password, now))
         con.commit()
     except sql.Error as e:
@@ -157,14 +157,20 @@ def get_user_type(pseudonyme):
     con.close()
     return type_user
 
-def update_user_points(pseudonyme, nbPoints):
+
+def update_user_points(pseudonyme, nbPoints, nbAcces):
+    """ Met à jour les points et le nombre de connexions de l'utilisateur """
+    if not pseudonyme:
+        return
+
     con = sql.connect("donnees.db")
-    cur= con.cursor()
-    if pseudonyme==None:
-        return 0
-    cur.execute("UPDATE Informations SET points=points + ? wHERE pseudonyme = ? OR email= ?", (nbPoints, pseudonyme,pseudonyme))
+    cur = con.cursor()
+    
+    # Mise à jour des points et du nombre de connexions
+    cur.execute("UPDATE Informations SET nbAcces = nbAcces + ?, points = points + ? WHERE pseudonyme = ? OR email = ?", 
+                (nbAcces, nbPoints, pseudonyme, pseudonyme))
     con.commit()
-    update_user_level(pseudonyme)
+    update_user_level(pseudonyme)  # Met à jour le niveau de l'utilisateur
     cur.close()
     con.close()
 
