@@ -63,26 +63,26 @@ def connexion():  # Connexion au site
 
 # Route de l'Accueil
 @app.route('/accueil')
-def accueil():#accueil accessible pour tous les utilisateurs
-    if 'username' in session:
-        connecte=True
-    else:
-        connecte=False
-    return render_template('accueil.html', connecte = connecte)
-
+def accueil():  # Accueil accessible pour tous les utilisateurs
+    connecte = 'username' in session  # Vérifie si l'utilisateur est connecté
+    return render_template('accueil.html', connecte=connecte)
 
 # Route du Profil
 @app.route('/profile')
-def profile(): #redirige vers le profil privé de l'utilisateur
+def profile():  # Redirige vers le profil privé de l'utilisateur
     if 'username' in session:
         user_info = getUserInfos(session['username'])  
         if user_info:
             return render_template('profil.html', user=user_info)  
         else:
-            return "Utilisateur non trouvé" 
+            return "Utilisateur non trouvé", 404
     else:
         return redirect(url_for('connexion'))  
 
+# Route de l'accueil Public pour les personnes non connectées
+@app.route('/accueilPublic')
+def accueilPublic():  # Page d'accueil pour les visiteurs
+    return render_template('accueilPublic.html')  
 
 
 

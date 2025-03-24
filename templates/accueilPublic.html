@@ -104,9 +104,8 @@
         <button>Lire l'article</button>
     </div>
         <div class="button-group">
-        {% if connecte %}
-        <a href="{{ url_for('profile') }}" class="button-view">Visualiser le profil</a>
-        {% endif %}
+        <a href="{{ url_for('liste_utilisateurs') }}" class="button-view">Visualiser les utilisateurs</a>
+        <a href="{{ url_for('creer_profil') }}" class="button-edit">Créer un profil</a>
     </div>
 
 </body>
