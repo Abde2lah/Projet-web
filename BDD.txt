@@ -39,7 +39,7 @@ CREATE TABLE Informations (
     service VARCHAR(30),
     niveau INT,
     pseudonyme VARCHAR(50) PRIMARY KEY,
-    points INT,
+    points FLOAT,
     nbAction INT,
     nbAcces INT,
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
