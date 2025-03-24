@@ -22,9 +22,12 @@
     
     <!-- Section des boutons de connexion et d'inscription -->
     <div class="bouton">
+        {% if connecte == False %}
         <a href="{{ url_for('connexion') }}"><button>Se connecter</button></a>
-        <a href="{{ url_for('accueil_objets') }}"><button>Accès objets</button></a>
         <a href="{{ url_for('creer_profil') }}"><button>S'inscrire</button></a>
+        {% else %}
+        <a href="{{ url_for('accueil_objets') }}"><button>Accès objets</button></a>
+        {% endif %}
     </div>
     
     <!-- Texte d'accueil -->
@@ -101,8 +104,10 @@
         <button>Lire l'article</button>
     </div>
         <div class="button-group">
+        {% if connecte %}
         <a href="{{ url_for('profile') }}" class="button-view">Visualiser le profil</a>
         <a href="{{ url_for('creer_profil') }}" class="button-edit">Modifier le profil</a>
+        {% endif %}
     </div>
 
 </body>
