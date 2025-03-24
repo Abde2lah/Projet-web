@@ -5,13 +5,25 @@ from flask import current_app
 import datetime
 
 
-def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme):
+def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme):
     try:
         con = sql.connect("donnees.db")
         cur = con.cursor()
-        now= datetime.datetime.now()
-        cur.execute("INSERT INTO Informations (nom, prenom, age, genre, email, dateNaissance, type, password, photo,fonction, service, niveau, pseudonyme, points, nbAction,nbAcces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0,0)", (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo,fonction, service, pseudonyme))
-        cur.execute("INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) VALUES (?,?,?,?,?,0)",(pseudonyme, email, type_user, password, now))
+        now = datetime.datetime.now()
+        # Vérifier si une photo a été fournie, sinon mettre une image par défaut
+        if not photo:
+            photo = "static/images/default.png"  # Image par défaut stockée dans /static/images/
+        # Insertion dans la table Informations
+        cur.execute("""
+            INSERT INTO Informations 
+            (nom, prenom, age, genre, email, dateNaissance, type, password, photo, fonction, service, niveau, pseudonyme, points, nbAction, nbAcces) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0, 0)
+        """, (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme))
+        # Insertion dans la table Connexion
+        cur.execute("""
+            INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) 
+            VALUES (?, ?, ?, ?, ?, 0)
+        """, (pseudonyme, email, type_user, password, now))
         con.commit()
     except sql.Error as e:
         print(f"Database error: {e}")
@@ -20,6 +32,7 @@ def  insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, passw
     finally:
         if con:
             con.close()
+
 
 def get_user_by_username(pseudo):
     try:

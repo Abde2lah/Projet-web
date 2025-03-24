@@ -1,10 +1,21 @@
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, redirect, url_for, flash
 from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
 from config import Config
 from models import *
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = 'static/images/'  # Dossier où les photos seront stockées
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Vérifie si le fichier a une extension autorisée
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -134,6 +145,30 @@ def creer_profil(): #créer un profil
         return redirect(url_for('connexion'))  # Redirection vers le profil
 
     return render_template('creation.html')  # Affichage du formulaire de création de profil
+
+@app.route('/upload_photo', methods=['POST'])
+def upload_photo():
+    if 'photo' not in request.files:
+        flash('Aucun fichier sélectionné')
+        return redirect(request.url)
+
+    file = request.files['photo']
+
+    if file.filename == '':
+        flash('Nom de fichier vide')
+        return redirect(request.url)
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)  # Sécurise le nom du fichier
+        filepath = os.path.join(UPLOAD_FOLDER, filename)  # Chemin complet
+        file.save(filepath)  # Sauvegarde du fichier
+
+        flash('Photo de profil mise à jour !')
+        return redirect(url_for('profil', pseudonyme=session['username']))  # Redirige vers le profil
+
+    flash('Type de fichier non autorisé')
+    return redirect(request.url)
+
 
 
 # Route de Déconnexion
@@ -326,8 +361,8 @@ def liste_utilisateurs():
     cursor = conn.cursor()
     cursor.execute("""
         SELECT nom, prenom, age, genre, email, dateNaissance, type, 
-               photo, fonction, service, niveau, pseudonyme, 
-               points, nbAction, nbAcces 
+        photo, fonction, service, niveau, pseudonyme, 
+        points, nbAction, nbAcces 
         FROM Informations
     """)  # Vérifie bien que nbAcces est inclus !
     users = cursor.fetchall()
