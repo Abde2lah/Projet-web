@@ -11,7 +11,8 @@ CREATE TABLE Objet (
     nom VARCHAR(255),
     type VARCHAR(30),
     dernierReglage DATE,
-    ConsommationL REAL
+    ConsommationL REAL,
+    ConsommationW REAL
 );
 
 -- Création de la table Connexion
