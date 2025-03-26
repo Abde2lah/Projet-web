@@ -11,6 +11,11 @@ from werkzeug.utils import secure_filename
 UPLOAD_FOLDER = 'static/images/'  # Dossier où les photos seront stockées
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app = Flask(__name__, static_folder='static')
+
+
+
+
 
 # Vérifie si le fichier a une extension autorisée
 def allowed_file(filename):

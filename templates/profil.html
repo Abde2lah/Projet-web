@@ -20,11 +20,9 @@
         
         <!-- Affichage de l'image de profil -->
         <p><strong>Photo:</strong></p>
-        <img src="{{ user[8] if user[8] else url_for('static', filename='images/default .png') }}" 
-        alt="Photo de profil" 
-        class="img-fluid" 
-        style="max-width: 150px; border-radius: 8px;">
-        
+        <img src="{{ url_for('static', filename=user[8]) }}" 
+        alt="Photo de profil" class="img-fluid" style="max-width: 150px; border-radius: 8px;">
+
         <p><strong>Pseudonyme:</strong> {{ user[12] }}</p>
         <p><strong>Fonction:</strong> {{ user[9] }}</p>
         <p><strong>Service:</strong> {{ user[10] }}</p>
