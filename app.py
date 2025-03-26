@@ -419,3 +419,49 @@ def liste_utilisateurs():
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')
+
+
+
+from werkzeug.utils import secure_filename
+import os
+
+# Définir les dossiers et extensions autorisées
+UPLOAD_FOLDER = 'static/images/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Créer le dossier s'il n'existe pas
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Vérifier si le fichier a une extension autorisée
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+def edit_profile():
+    if request.method == 'POST':
+        photo = request.files.get('photo')  # Récupérer le fichier de l'image
+
+        if photo and allowed_file(photo.filename):
+            # Assurer un nom de fichier sécurisé
+            filename = secure_filename(photo.filename)
+            # Sauvegarder l'image dans le dossier 'static/images'
+            photo.save(os.path.join(UPLOAD_FOLDER, filename))
+            
+            # Enregistrer le nom du fichier dans la base de données
+            # (Assure-toi d'avoir une fonction pour mettre à jour la photo dans la base de données)
+            pseudonyme = session['username']  # Exemple d'utilisateur connecté
+            update_photo_in_db(pseudonyme, filename)
+
+            flash("Photo de profil mise à jour !", "success")
+            return redirect(url_for('profile'))  # Rediriger vers le profil
+
+    return render_template('edit_profile.html')  # Page HTML avec formulaire
+
+# Fonction pour mettre à jour la photo dans la base de données
+def update_photo_in_db(pseudonyme, filename):
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+    cur.execute("UPDATE Informations SET photo = ? WHERE pseudonyme = ?", (filename, pseudonyme))
+    con.commit()
+    con.close()
+

@@ -47,8 +47,12 @@
             <img src="{{ user[8] if user[8] else url_for('static', filename='images/default.png') }}" 
                  alt="Photo de profil">
 
-            <label><i class="fas fa-upload"></i> Nouvelle photo :</label>
-            <input type="file" name="photo" accept=".png, .jpg, .jpeg, .gif">
+            <form method="POST" enctype="multipart/form-data">
+                    <label for="photo">Télécharger une photo de profil:</label>
+                    <input type="file" name="photo" id="photo">
+                    <button type="submit">Mettre à jour</button>
+            </form>
+                
 
             <button type="submit"><i class="fas fa-save"></i> Mettre à jour</button>
         </form>

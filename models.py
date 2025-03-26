@@ -10,40 +10,48 @@ UPLOAD_FOLDER = 'static/images/'  # Dossier où les photos seront stockées
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
-
-
 def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme):
     try:
         con = sql.connect("donnees.db")
         cur = con.cursor()
         now = datetime.datetime.now()
+
         # Vérifier si une photo a été fournie, sinon mettre une image par défaut
         if not photo:
-            photo = "static/images/default.png"
+            photo = "images/default.png"  # Utilisation de l'image par défaut
             filename = None
-        if photo:
-            filename = secure_filename(photo.filename)  # Sécurise le nom du fichier
-            photo.save(os.path.join(UPLOAD_FOLDER, filename))  # Image par défaut stockée dans /static/images/
+        else:
+            # Vérification si le fichier est autorisé
+            if allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)  # Sécurise le nom du fichier
+                photo.save(os.path.join(UPLOAD_FOLDER, filename))  # Sauvegarde l'image dans le dossier
+                photo = "images/" + filename  # Chemin relatif pour la base de données
+            else:
+                # Si l'extension n'est pas autorisée, utiliser l'image par défaut
+                photo = "images/default.png"
+        
         # Insertion dans la table Informations
         cur.execute("""
             INSERT INTO Informations 
             (nom, prenom, age, genre, email, dateNaissance, type, password, photo, fonction, service, niveau, pseudonyme, points, nbAction, nbAcces) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 0, 0, 0)
         """, (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme))
+        
         # Insertion dans la table Connexion
         cur.execute("""
             INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) 
             VALUES (?, ?, ?, ?, ?, 0)
         """, (pseudonyme, email, type_user, password, now))
-        con.commit()
+        
+        con.commit()  # Appliquer les changements à la base de données
     except sql.Error as e:
         print(f"Database error: {e}")
         if con:
-            con.rollback()
+            con.rollback()  # Annuler les changements si une erreur survient
     finally:
         if con:
-            con.close()
+            con.close()  # Fermer la connexion à la base de données
+
 
 
 def get_user_by_username(pseudo):
@@ -249,28 +257,64 @@ def increment_user_actions(pseudonyme):
         con.close()
 
 
+import os
+import sqlite3 as sql
+from werkzeug.utils import secure_filename
+
+# Configurer les dossiers et extensions autorisées
+UPLOAD_FOLDER = 'static/images/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Créer le dossier s'il n'existe pas
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    """ Vérifie si le fichier a une extension autorisée """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, password, photo):
+    """ Met à jour les informations de l'utilisateur dans la base de données """
+
     try:
         con = sql.connect("donnees.db")
         cur = con.cursor()
 
+        # Si une photo est envoyée, vérifier l'extension et la sauvegarder
+        if photo and allowed_file(photo.filename):
+            filename = secure_filename(photo.filename)  # Sécuriser le nom du fichier
+            photo_path = os.path.join(UPLOAD_FOLDER, filename)
+            photo.save(photo_path)  # Sauvegarder le fichier
+
+            # Mettre à jour la base de données avec le chemin de la photo
+            photo_to_save = 'images/' + filename
+        else:
+            # Si aucune photo n'est envoyée ou si l'extension est incorrecte
+            photo_to_save = None
+
+        # Si un mot de passe est fourni, on le met à jour
         if password:
             cur.execute("""
                 UPDATE Informations 
                 SET nom = ?, prenom = ?, age = ?, genre = ?, email = ?, dateNaissance = ?, fonction = ?, service = ?, password = ?, photo = ?
                 WHERE pseudonyme = ?
-            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, password, photo, pseudonyme))
+            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, password, photo_to_save, pseudonyme))
         else:
+            # Si le mot de passe n'est pas fourni, ne pas le mettre à jour
             cur.execute("""
                 UPDATE Informations 
                 SET nom = ?, prenom = ?, age = ?, genre = ?, email = ?, dateNaissance = ?, fonction = ?, service = ?, photo = ?
                 WHERE pseudonyme = ?
-            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, photo, pseudonyme))
+            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, photo_to_save, pseudonyme))
 
-        con.commit()
+        con.commit()  # Appliquer les changements
+        print("Informations utilisateur mises à jour avec succès")
+
     except sql.Error as e:
         print(f"Erreur lors de la mise à jour du profil : {e}")
-        con.rollback()
+        if con:
+            con.rollback()  # Annuler les modifications si une erreur se produit
     finally:
-        con.close()
+        if con:
+            con.close()  # Fermer la connexion à la base de données
+
 
