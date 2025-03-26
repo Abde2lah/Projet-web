@@ -146,6 +146,46 @@ def creer_profil(): #créer un profil
 
     return render_template('creation.html')  # Affichage du formulaire de création de profil
 
+
+@app.route('/modifier_profil', methods=['GET', 'POST'])
+def modifier_profil():
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_info = getUserInfos(pseudonyme)  # Récupération des infos actuelles
+
+    if request.method == 'POST':
+        nom = request.form.get('nom', user_info[0])
+        prenom = request.form.get('prenom', user_info[1])
+        age = request.form.get('age', user_info[2])
+        genre = request.form.get('genre', user_info[3])
+        email = request.form.get('email', user_info[4])
+        date_naissance = request.form.get('dateNaissance', user_info[5])
+        fonction = request.form.get('fonction', user_info[9])
+        service = request.form.get('service', user_info[10])
+        nouveau_mdp = request.form.get('password', '')
+
+        # Gestion de la photo (conserve l'ancienne si pas de nouvelle)
+        photo_filename = user_info[8]  
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo and allowed_file(photo.filename):
+                filename = secure_filename(f"{pseudonyme}_{photo.filename}")
+                photo_filename = f"static/images/{filename}"  
+
+        # Hash du mot de passe si modifié
+        hashed_password = bcrypt.hashpw(nouveau_mdp.encode('utf-8'), bcrypt.gensalt()) if nouveau_mdp else None
+
+        # Mise à jour en base de données
+        update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, hashed_password, photo_filename)
+
+        flash("Profil mis à jour avec succès !")
+        return redirect(url_for('profile'))
+
+    return render_template('modifier_profil.html', user=user_info)
+
+
 @app.route('/upload_photo', methods=['POST'])
 def upload_photo():
     if 'photo' not in request.files:
@@ -280,7 +320,7 @@ def search_objets():#fonction de recherche des objets
     cur.execute(sql_query, params)
     results = cur.fetchall()
     pseudonyme = session['username']
-    update_user_points(pseudonyme, 1)
+    update_user_points(pseudonyme, 1,1)
     con.close()
 
     return render_template('resultats-objets.html', results=results, query=search_query)

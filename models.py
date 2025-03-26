@@ -3,6 +3,12 @@ import bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
 import datetime
+import os
+from werkzeug.utils import secure_filename 
+
+UPLOAD_FOLDER = 'static/images/'  # Dossier où les photos seront stockées
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme):
@@ -12,7 +18,11 @@ def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, passwo
         now = datetime.datetime.now()
         # Vérifier si une photo a été fournie, sinon mettre une image par défaut
         if not photo:
-            photo = "static/images/default.png"  # Image par défaut stockée dans /static/images/
+            photo = "static/images/default.png"
+            filename = None
+        if photo:
+            filename = secure_filename(photo.filename)  # Sécurise le nom du fichier
+            photo.save(os.path.join(UPLOAD_FOLDER, filename))  # Image par défaut stockée dans /static/images/
         # Insertion dans la table Informations
         cur.execute("""
             INSERT INTO Informations 
@@ -235,3 +245,30 @@ def increment_user_actions(pseudonyme):
     finally:
         cur.close()
         con.close()
+
+
+def update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, password, photo):
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+
+        if password:
+            cur.execute("""
+                UPDATE Informations 
+                SET nom = ?, prenom = ?, age = ?, genre = ?, email = ?, dateNaissance = ?, fonction = ?, service = ?, password = ?, photo = ?
+                WHERE pseudonyme = ?
+            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, password, photo, pseudonyme))
+        else:
+            cur.execute("""
+                UPDATE Informations 
+                SET nom = ?, prenom = ?, age = ?, genre = ?, email = ?, dateNaissance = ?, fonction = ?, service = ?, photo = ?
+                WHERE pseudonyme = ?
+            """, (nom, prenom, age, genre, email, date_naissance, fonction, service, photo, pseudonyme))
+
+        con.commit()
+    except sql.Error as e:
+        print(f"Erreur lors de la mise à jour du profil : {e}")
+        con.rollback()
+    finally:
+        con.close()
+

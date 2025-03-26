@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le Profil - Hôpital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/modifier_profil.css') }}">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-user-md"></i> Modifier votre profil</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label><i class="fas fa-user"></i> Nom :</label>
+            <input type="text" name="nom" value="{{ user[0] }}">
+
+            <label><i class="fas fa-user"></i> Prénom :</label>
+            <input type="text" name="prenom" value="{{ user[1] }}">
+
+            <label><i class="fas fa-birthday-cake"></i> Âge :</label>
+            <input type="number" name="age" value="{{ user[2] }}">
+
+            <label><i class="fas fa-venus-mars"></i> Genre :</label>
+            <select name="genre">
+                <option value="Homme" {% if user[3] == "Homme" %}selected{% endif %}>Homme</option>
+                <option value="Femme" {% if user[3] == "Femme" %}selected{% endif %}>Femme</option>
+                <option value="Autre" {% if user[3] == "Autre" %}selected{% endif %}>Autre</option>
+            </select>
+
+            <label><i class="fas fa-envelope"></i> Email :</label>
+            <input type="email" name="email" value="{{ user[4] }}">
+
+            <label><i class="fas fa-calendar"></i> Date de naissance :</label>
+            <input type="date" name="dateNaissance" value="{{ user[5] }}">
+
+            <label><i class="fas fa-user-md"></i> Fonction :</label>
+            <input type="text" name="fonction" value="{{ user[9] }}">
+
+            <label><i class="fas fa-briefcase-medical"></i> Service :</label>
+            <input type="text" name="service" value="{{ user[10] }}">
+
+            <label><i class="fas fa-key"></i> Nouveau mot de passe :</label>
+            <input type="password" name="password" placeholder="Laissez vide si inchangé">
+
+            <label><i class="fas fa-image"></i> Photo de profil actuelle :</label>
+            <img src="{{ user[8] if user[8] else url_for('static', filename='images/default.png') }}" 
+                 alt="Photo de profil">
+
+            <label><i class="fas fa-upload"></i> Nouvelle photo :</label>
+            <input type="file" name="photo" accept=".png, .jpg, .jpeg, .gif">
+
+            <button type="submit"><i class="fas fa-save"></i> Mettre à jour</button>
+        </form>
+
+        <a href="{{ url_for('profile') }}"><i class="fas fa-arrow-left"></i> Retour au profil</a>
+    </div>
+</body>
+</html>
