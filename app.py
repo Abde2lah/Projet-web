@@ -34,7 +34,7 @@ def connexion():  # Connexion au site
         pseudo = request.form.get('pseudo', '') 
         email = request.form.get('email', '') 
         password = request.form['password'].encode('utf-8')  # Encode mdp
-        user_type = request.form['type']
+        #user_type = request.form['type']
         
         if pseudo:
             user = get_user_by_username(pseudo)
@@ -141,11 +141,15 @@ def creer_profil(): #créer un profil
         #nbAction = request.form['nbAction'] #à supprimer
         service = request.form['service']
 
+
+        #test méthode différente pour la photo
+        photo2 = request.files.get('photo')
+
         # Hachage du mot de passe avant insertion
         hashed_password = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
 
         # Insertion dans la base de données
-        insert_user(nom, prenom, age, genre, email,	dateNaissance, type_user, hashed_password, photo, fonction, service, pseudonyme)
+        insert_user(nom, prenom, age, genre, email,	dateNaissance, type_user, hashed_password, photo2, fonction, service, pseudonyme)
         envoyer_email_confirmation(email, pseudonyme)
         return redirect(url_for('connexion'))  # Redirection vers le profil
 
@@ -174,7 +178,7 @@ def modifier_profil():
         # Gestion de la photo (conserve l'ancienne si pas de nouvelle)
         photo_filename = user_info[8]  
         if 'photo' in request.files:
-            photo = request.files['photo']
+            photo = request.files.get('photo')
             if photo and allowed_file(photo.filename):
                 filename = secure_filename(f"{pseudonyme}_{photo.filename}")
                 photo_filename = f"static/images/{filename}"  
@@ -183,7 +187,7 @@ def modifier_profil():
         hashed_password = bcrypt.hashpw(nouveau_mdp.encode('utf-8'), bcrypt.gensalt()) if nouveau_mdp else None
 
         # Mise à jour en base de données
-        update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, hashed_password, photo_filename)
+        update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, hashed_password, photo)
 
         flash("Profil mis à jour avec succès !")
         return redirect(url_for('profile'))
