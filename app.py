@@ -181,7 +181,7 @@ def modifier_profil():
             photo = request.files.get('photo')
             if photo and allowed_file(photo.filename):
                 filename = secure_filename(f"{pseudonyme}_{photo.filename}")
-                photo_filename = f"static/images/{filename}"  
+                photo_filename = f"{filename}"  
 
         # Hash du mot de passe si modifié
         hashed_password = bcrypt.hashpw(nouveau_mdp.encode('utf-8'), bcrypt.gensalt()) if nouveau_mdp else None

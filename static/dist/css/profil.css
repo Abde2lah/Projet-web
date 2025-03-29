@@ -28,3 +28,11 @@ p {
     margin-top: 20px;
     width: 100%;
 }
+
+.navbar{
+    background-color:lightsalmon;
+}
+
+.navbar > *{
+    padding: 10px;
+}
