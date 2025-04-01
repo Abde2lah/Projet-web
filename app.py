@@ -421,10 +421,6 @@ if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')
 
 
-
-from werkzeug.utils import secure_filename
-import os
-
 # Définir les dossiers et extensions autorisées
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
