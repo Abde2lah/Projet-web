@@ -50,7 +50,7 @@ CREATE TABLE Informations (
 CREATE TABLE Salle (
     NumeroSalle INT PRIMARY KEY,
     Etage INT, 
-    Specialite VARCHAR(255),
+    Service VARCHAR(255),
     FOREIGN KEY (ID) REFERENCES Objet(ID)
     FOREIGN KEY pseudonyme REFERENCES Connexion(pseudonyme)
 );
