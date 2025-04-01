@@ -10,6 +10,10 @@
 </head>
 <body>
 
+    <div class="navbar">
+        <a href="{{ url_for('accueil')}}">Accueil</a>
+    </div>
+
     <div class="container text-center">
         <h2>Bienvenue, {{ user[1] }} {{ user[0] }} !</h2>
         <p><strong>Âge:</strong> {{ user[2] }} ans</p>
@@ -20,8 +24,10 @@
         
         <!-- Affichage de l'image de profil -->
         <p><strong>Photo:</strong></p>
-        <img src="{{ url_for('static', filename='images/' + user[8]) }}" 
-        alt="Photo de profil" class="img-fluid" style="max-width: 150px;">
+        <!--  <img src="{{ url_for('static', filename='images/' + user[8]) }}" 
+        alt="Photo de profil" class="img-fluid" style="max-width: 150px;">   -->
+        <img src="{{ user[8] }}" alt="" class="img-fluid" style="max-width: 150px; border-radius: 50%; border: 8px; border-color: black;"/>
+        
 
         <p><strong>Pseudonyme:</strong> {{ user[12] }}</p>
         <p><strong>Fonction:</strong> {{ user[9] }}</p>

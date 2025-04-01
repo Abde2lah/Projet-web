@@ -25,7 +25,7 @@ def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, passwo
             if allowed_file(photo.filename):
                 filename = secure_filename(photo.filename)  # Sécurise le nom du fichier
                 photo.save(os.path.join(UPLOAD_FOLDER, filename))  # Sauvegarde l'image dans le dossier
-                photo = "images/" + filename  # Chemin relatif pour la base de données
+                photo = "/static/images/" + filename  # Chemin absolu pour la base de données
             else:
                 # Si l'extension n'est pas autorisée, utiliser l'image par défaut
                 photo = "images/default.png"
@@ -286,7 +286,7 @@ def update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance,
             photo.save(photo_path)  # Sauvegarder le fichier
 
             # Mettre à jour la base de données avec le chemin de la photo
-            photo_to_save = 'images/' + filename
+            photo_to_save = '/static/images/' + filename
         else:
             # Si aucune photo n'est envoyée ou si l'extension est incorrecte
             photo_to_save = None

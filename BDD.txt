@@ -46,5 +46,13 @@ CREATE TABLE Informations (
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 
+-- Création de la table Salle
+CREATE TABLE Salle (
+    NumeroSalle INT PRIMARY KEY,
+    Etage INT, 
+    Specialite VARCHAR(255),
+    FOREIGN KEY (ID) REFERENCES Objet(ID)
+    FOREIGN KEY pseudonyme REFERENCES Connexion(pseudonyme)
+);
 
 
