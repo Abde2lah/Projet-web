@@ -7,6 +7,7 @@ from config import Config
 from models import *
 import os
 from werkzeug.utils import secure_filename
+import sys
 
 UPLOAD_FOLDER = 'static/images/'  # Dossier où les photos seront stockées
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -34,7 +35,7 @@ def connexion():  # Connexion au site
         pseudo = request.form.get('pseudo', '') 
         email = request.form.get('email', '') 
         password = request.form['password'].encode('utf-8')  # Encode mdp
-        #user_type = request.form['type']
+        user_type = request.form['type']
         
         if pseudo:
             user = get_user_by_username(pseudo)
@@ -47,7 +48,7 @@ def connexion():  # Connexion au site
             if confirmation_pseudo(pseudo):  # Vérifie si le pseudonyme a été confirmé
                 session['username'] = user[0] 
                 print(f"Username in session: {session.get('username')}")
-                update_user_points(username, 0.5)  # Incrémente les points de 0.5 lors de la connexion
+                update_user_points(username, 0.5, 1)  # Incrémente les points de 0.5 lors de la connexion
 
                 return redirect(url_for('accueil'))  
             elif confirmation_email(email):  # Vérifie si l'email a été confirmé
@@ -104,7 +105,19 @@ def profil(pseudonyme):
     else:
         return "Utilisateur non trouvé", 404
 
+@app.route("/objet/<IDobjet>")
+def objet(IDobjet):
+    conn = sql.connect("donnees.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Objet WHERE ID = ?", (IDobjet,))
+    objet = cursor.fetchone()
+    conn.close
 
+    if objet:
+        print(objet, file=sys.stderr)
+        return render_template("objet.html", objet=objet)
+    else:
+        return "Objet non trouvé", 404
 
 
 # Fonction d'envoi de mail de confirmation
@@ -243,9 +256,9 @@ def edit_profile():
             photo = request.form['photo']
             email = request.form['email']
             pseudonyme = request.form['pseudonyme']
-            #niveau = request.form['niveau']
-            #points = request.form['points']
-            #nbAction = request.form['nbAction']
+            niveau = request.form['niveau']
+            points = request.form['points']
+            nbAction = request.form['nbAction']
 
             # Mise à jour des informations de l'utilisateur dans la base de données
             update_user(session['username'], nom, prenom, age, genre, dateNaissance, photo, email, pseudonyme, niveau, points, nbAction)
@@ -367,7 +380,7 @@ def creer_objet():
         insert_object(ID, tempActuelle, tempCible, mode, connectivite, batterie, service, marque, nom, type_object, dernierReglage, consommationL, consommationW)
 
         # Mettre à jour les points et les actions de l'utilisateur
-        update_user_points(pseudonyme, 2)
+        update_user_points(pseudonyme, 2, 0)
         increment_user_actions(pseudonyme)  # 🔥 Ajout du compteur d'actions
 
         flash("Objet ajouté avec succès !")
@@ -375,7 +388,7 @@ def creer_objet():
 
     return render_template('ajout-objet.html')
 
-@app.route('/profil/<string:pseudonyme>')
+@app.route('/profilPublic/<string:pseudonyme>')
 def profilPublic(pseudonyme): #fonction permettant d'afficher le profil publique
     # Récupère les informations du profil à partir de l'ID
     user_profile = getUserInfosPublic(pseudonyme)

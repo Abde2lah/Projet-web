@@ -13,7 +13,7 @@
         <ul>
             {% for item in results %}
             <li>
-                {{ item[0] }} - {{ item[6] }} - {{ item[7] }} - {{ item[8] }} - {{ item[9]}}
+                <a class="btn btn-danger" href ="{{ url_for('objet', IDobjet=item[0]) }}">{{ item[0] }} - {{ item[6] }} - {{ item[7] }} - {{ item[8] }} - {{ item[9]}}</a>
             </li>
             {% endfor %}
         </ul>
