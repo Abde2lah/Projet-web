@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">7
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/ajouter_salle.css') }}">
+    <title>Ajouter une Salle</title>
+</head>
+<body>
+    <h1>Ajouter une Salle</h1>
+
+    <form action="/ajouter_salle" method="POST">
+        <label for="NumeroSalle">Numéro de la Salle:</label>
+        <input type="number" name="NumeroSalle" required><br><br>
+
+        <label for="Etage">Étage:</label>
+        <input type="number" name="Etage" required><br><br>
+
+        <label for="Service">Service:</label>
+        <input type="text" name="Service" required><br><br>
+
+        <label for="ObjetID">ID de l'Objet associé:</label>
+        <input type="number" name="ObjetID" required><br><br>
+
+        <label for="pseudonyme">Pseudonyme de l'utilisateur:</label>
+        <input type="text" name="pseudonyme" required><br><br>
+
+        <input type="submit" value="Ajouter la Salle">
+    </form>
+
+</body>
+</html>

@@ -257,9 +257,6 @@ def increment_user_actions(pseudonyme):
         con.close()
 
 
-import os
-import sqlite3 as sql
-from werkzeug.utils import secure_filename
 
 # Configurer les dossiers et extensions autorisées
 UPLOAD_FOLDER = 'static/images/'

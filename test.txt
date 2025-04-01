@@ -1,0 +1,80 @@
+
+@app.route('/ajouter_salle', methods=['GET', 'POST'])
+def ajouter_salle():
+    if request.method == 'POST':
+        # Récupération des données du formulaire
+        NumeroSalle = request.form['NumeroSalle']
+        Etage = request.form['Etage']
+        Service = request.form['Service']
+        ObjetID = request.form['ObjetID']
+        pseudonyme = request.form['pseudonyme']
+
+        # Appel de la fonction pour insérer la salle
+        insert_salle(NumeroSalle, Etage, Service, ObjetID, pseudonyme)
+
+        # Redirection vers une page de confirmation ou autre
+        return redirect(url_for('salle_ajoutee'))
+
+    return render_template('ajouter_salle.html')
+
+# Route pour afficher une confirmation après l'ajout de la salle
+@app.route('/salle_ajoutee')
+def salle_ajoutee():
+    return "Salle ajoutée avec succès !"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+app = Flask(__name__)
+
+# Fonction pour associer un objet à une salle
+def ajouter_objet_a_salle(NumeroSalle, ObjetID):
+    try:
+        # Connexion à la base de données
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+
+        # Insérer dans la table de liaison SalleObjet
+        cur.execute("""
+            INSERT INTO SalleObjet (NumeroSalle, ObjetID)
+            VALUES (?, ?)
+        """, (NumeroSalle, ObjetID))
+
+        # Validation des changements
+        con.commit()
+        print(f"Objet {ObjetID} ajouté à la salle {NumeroSalle} avec succès.")
+    
+    except sql.Error as e:
+        # Gestion des erreurs SQL
+        print(f"Erreur lors de l'ajout de l'objet à la salle : {e}")
+        if con:
+            con.rollback()
+    
+    finally:
+        # Fermeture de la connexion à la base de données
+        if con:
+            con.close()
+
+# Route pour afficher le formulaire d'ajout d'objet à une salle
+@app.route('/ajouter_objet_a_salle', methods=['GET', 'POST'])
+def ajouter_objet_a_salle_route():
+    if request.method == 'POST':
+        # Récupération des données du formulaire
+        NumeroSalle = request.form['NumeroSalle']
+        ObjetID = request.form['ObjetID']
+
+        # Appel de la fonction pour ajouter l'objet à la salle
+        ajouter_objet_a_salle(NumeroSalle, ObjetID)
+
+        # Redirection vers une page de confirmation ou autre
+        return redirect(url_for('salle_objet_ajoute'))
+
+    return render_template('ajouter_objet_a_salle.html')
+
+# Route pour afficher une confirmation après l'ajout de l'objet à la salle
+@app.route('/salle_objet_ajoute')
+def salle_objet_ajoute():
+    return "Objet ajouté à la salle avec succès !"
+
+

@@ -51,8 +51,11 @@ CREATE TABLE Salle (
     NumeroSalle INT PRIMARY KEY,
     Etage INT, 
     Service VARCHAR(255),
-    FOREIGN KEY (ID) REFERENCES Objet(ID)
-    FOREIGN KEY pseudonyme REFERENCES Connexion(pseudonyme)
+    ID INT, 
+    pseudonyme VARCHAR(255),
+    FOREIGN KEY (ObjetID) REFERENCES Objet(ID),
+    FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 
+-- débrancher les malades
 

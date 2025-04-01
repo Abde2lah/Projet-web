@@ -4,24 +4,10 @@ body {
     color: #333;
     margin: 0;
     padding: 0;
-    font-size: 16px;
-    overflow-x: hidden;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.recherche, .bouton {
-    max-width: 600px;
+    max-width: 800px;
     margin: 50px auto;
     padding: 30px;
     background: white;
@@ -30,20 +16,28 @@ img {
     border-left: 5px solid #28a745; /* Bande verte médicale */
 }
 
-h2 {
+h1 {
     text-align: center;
-    color: #007bff; /* Bleu médical */
+    color: #007bff;
     font-weight: bold;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+legend {
+    font-weight: bold;
+    color: #007bff;
 }
 
 label {
     font-weight: bold;
     margin-top: 10px;
+    display: block;
 }
 
 input, select {
@@ -63,14 +57,13 @@ input:focus, select:focus {
 button {
     background-color: #007bff;
     color: white;
+    padding: 10px;
     border: none;
+    border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
     margin-top: 15px;
-    padding: 10px 15px;
     width: 100%;
-    max-width: 300px;
-    border-radius: 8px;
 }
 
 button:hover {
@@ -88,11 +81,4 @@ a {
 
 a:hover {
     color: #1d743c;
-}
-
-.bouton button {
-    width: 100%;
-    text-align: center;
-    padding: 15px;
-    font-size: 14px;
 }
