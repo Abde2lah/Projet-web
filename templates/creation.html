@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création de profil - Hôpital</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/creation.css') }}">
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>Créer un profil</h1>
+        <form method="post">
+            
+            <!-- Informations personnelles -->
+            <fieldset class="border p-3 mb-3">
+                <legend>Informations personnelles</legend>
+                <div class="mb-3">
+                    <label for="nom" class="form-label">Nom :</label>
+                    <input type="text" id="nom" name="nom" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="prenom" class="form-label">Prénom :</label>
+                    <input type="text" id="prenom" name="prenom" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="age" class="form-label">Âge :</label>
+                    <input type="number" id="age" name="age" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="genre" class="form-label">Genre :</label>
+                    <select id="genre" name="genre" class="form-select">
+                        <option value="h">Homme</option>
+                        <option value="f">Femme</option>
+                        <option value="a">Autre</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="dateNaissance" class="form-label">Date de naissance :</label>
+                    <input type="date" id="dateNaissance" name="dateNaissance" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="photo" class="form-label">Photo de profil :</label>
+                    <input type="file" id="photo" name="photo" class="form-control" enctype="multipart/form-data">
+                </div>
+            </fieldset>
+
+            <!-- Informations de connexion -->
+            <fieldset class="border p-3 mb-3">
+                <legend>Informations de connexion</legend>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Adresse email :</label>
+                    <input type="email" id="email" name="email" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="pseudonyme" class="form-label">Pseudonyme :</label>
+                    <input type="text" id="pseudonyme" name="pseudonyme" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="mot_de_passe" class="form-label">Mot de passe :</label>
+                    <input type="password" id="mot_de_passe" name="mot_de_passe" class="form-control">
+                </div>
+            </fieldset>
+
+            <!-- Autres informations -->
+            <fieldset class="border p-3 mb-3">
+                <legend>Autres informations</legend>
+                <div class="mb-3">
+                    <label for="type" class="form-label">Type d'utilisateur :</label>
+                    <select id="type" name="type" class="form-select">
+                        <option value="1">Simple</option>
+                        <option value="2">Complexe</option>
+                        <option value="3">Administrateur</option>
+                </select>
+                </div>
+                <div class="mb-3">
+                    <label for="fonction" class="form-label">Fonction :</label>
+                    <select id="fonction" name="fonction" class="form-select">
+                    <option value="Medecin">Médecin</option>
+                    <option value="Infirmier">Infirmier</option>
+                    <option value="Aide-soignant">Aide-soignant</option>
+                    <option value="Autre soignant">Autre soignant</option>
+                    <option value="Technicien">Technicien</option>
+                    <option value="Administratif">Administratif</option>
+                </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="service" class="form-label">Service :</label>
+                    <select id="service" name="service" class="form-select">
+                    <option value="Urgences">Urgences</option>
+                    <option value="Pediatrie">Pédiatrie</option>
+                    <option value="Anesthesie">Anesthésie-Réanimation</option>
+                    <option value="Oncologie">Oncologie</option>
+                    <option value="Psychiatrie">Psychiatrie</option>
+                </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="niveau" class="form-label">Niveau :</label>
+                    <input type="number" id="niveau" name="niveau" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="points" class="form-label">Points :</label>
+                    <input type="number" id="points" name="points" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="nbAction" class="form-label">Nombre d'actions :</label>
+                    <input type="number" id="nbAction" name="nbAction" class="form-control">
+                </div>
+            </fieldset>
+
+            <!-- Bouton de soumission -->
+            <button type="submit" class="btn btn-primary">Créer le profil</button>
+
+        </form>
+    </div>
+
+    <!-- Lien vers Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

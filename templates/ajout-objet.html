@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajout d'objets connectés</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/creation.css') }}">
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ajout d'un objet connecté</h1>
+        <form method="post">
+            
+            <!-- Informations personnelles -->
+            <fieldset class="border p-3 mb-3">
+                <legend>Informations générale</legend>
+                <div class="mb-3">
+                    <label for="ID" class="form-label">ID :</label>
+                    <input type="ID" id="ID" name="ID" class="form-control">
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="nom" class="form-label">Nom :</label>
+                    <input type="nom" id="nom" name="nom" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <br><br><br>
+                    <label for="type">Choisissez un dispositif :</label>
+                    <select id="type" name="type">
+                        <option value=""> Tous les dispositifs</option>
+                        <option value="thermostat">Thermostat</option>
+                        <option value="ventilation">ventilation</option>
+                        <optgroup label="Imagerie">
+                            <option value="irm">IRM</option>
+                            <option value="radio">Radio</option>
+                            <option value="scanner">Scanner</option>
+                        </optgroup>
+        
+                        <optgroup label="Analyse">
+                            <option value="microscope">Microscope</option>
+                            <option value="refrigerateur">Réfrigérateur</option>
+                        </optgroup>
+        
+                        <optgroup label="Chirurgie">
+                            <option value="robot_chirurgical">Robot chirurgical</option>
+                        </optgroup>
+        
+                        <optgroup label="Réanimation">
+                            <option value="ventilation_artificielle">Ventilation artificielle</option>
+                            <option value="scope">Scope</option>
+                            <option value="pompe_nutritionnelle">Pompe nutritionnelle</option>
+                        </optgroup>
+        
+                        <optgroup label="Psychiatrie">
+                            <option value="robot_rtms">Robot RTMS</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="serice">Choisissez un service :</label>
+                    <select name="service">
+                        <option value="Urgences">Urgences</option>
+                        <option value="Pediatrie">Pédiatrie</option>
+                        <option value="Anesthesie">Anesthésie-Réanimation</option>
+                        <option value="Oncologie">Oncologie</option>
+                        <option value="Psychiatrie">Psychiatrie</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="marque">Choisissez une marque :</label>
+                    <select id="marque" name="marque">
+                        <optgroup label="Imagerie médicale">
+                            <option value="philips">Philips Healthcare</option>
+                            <option value="siemens">Siemens Healthineers</option>
+                            <option value="ge">General Electric (GE) Healthcare</option>
+                            <option value="canon">Canon Medical Systems</option>
+                        </optgroup>
+        
+                        <optgroup label="Dispositifs de diagnostic">
+                            <option value="roche">Roche Diagnostics</option>
+                            <option value="abbott">Abbott Laboratories</option>
+                            <option value="medtronic">Medtronic</option>
+                        </optgroup>
+        
+                        <optgroup label="Chirurgie">
+                            <option value="intuitive">Intuitive Surgical</option>
+                            <option value="jnj">Johnson & Johnson (Ethicon)</option>
+                            <option value="stryker">Stryker</option>
+                        </optgroup>
+        
+                        <optgroup label="Réanimation et soins intensifs">
+                            <option value="draeger">Draeger</option>
+                            <option value="baxter">Baxter International</option>
+                            <option value="resmed">ResMed</option>
+                        </optgroup>
+        
+                        <optgroup label="Autres domaines">
+                            <option value="3m">3M Health Care</option>
+                            <option value="bd">Becton Dickinson (BD)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <br>
+                <div>
+                    <label for="mode">Choisissez un mode :</label>
+                    <select name="mode" id="mode">
+                        <option value="inactif">Inactif</option>
+                        <option value="actif">Actif</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="dernierReglage">Dernier Réglage (YYYY-MM-DD):</label><br>
+                    <input type="date" id="dernierReglage" name="dernierReglage"><br><br>
+                </div>
+                <br>
+               
+            </fieldset>
+            <!--Autres informations-->
+            <fieldset class="border p-3 mb-3">
+                <legend>Autres informations</legend>
+                <div class="mb-3">
+                    <label for="tempActuelle">Température Actuelle:</label><br>
+                    <input type="number" id="tempActuelle" name="tempActuelle" step="0.1">
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="tempCible">Température cible:</label><br>
+                    <input type="number" id="tempCible" name="tempCible" step="0.1">
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="batterie">Batterie (%):</label><br>
+                    <input type="number" id="batterie" name="batterie" step="1">
+                </div>
+                <div class="mb-3">
+                    <label for="ConsommationL">Consommation en litre:</label><br>
+                    <input type="number" id="ConsommationL" name="ConsommationL">
+                </div>
+                <div class="mb-3">
+                    <label for="ConsommationW">Consommation en watt:</label><br>
+                    <input type="number" id="ConsommationW" name="ConsommationW">
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="connectivite">Connectivité:</label><br>
+                    <input type="text" id="connectivite" name="connectivite">
+                </div>
+            </fieldset>
+
+            <!-- Bouton de soumission -->
+            <a href="accueil_objets.html"><button type="submit" class="btn btn-primary" >Ajouter l'objet</button></a>
+
+        </form>
+    </div>
+
+    <!-- Lien vers Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+-- Création de la table Objet
+CREATE TABLE Objet (
+    ID INT PRIMARY KEY,
+    TempActuelle REAL,
+    tempcible REAL,
+    mode VARCHAR(30),
+    connectivite VARCHAR(30),
+    batterie REAL,
+    service VARCHAR(30),
+    marque VARCHAR(50),
+    nom VARCHAR(255),
+    type VARCHAR(30),
+    dernierReglage DATE,
+    ConsommationL REAL,
+    ConsommationW REAL
+);
+
+-- Création de la table Connexion
+CREATE TABLE Connexion (
+    pseudonyme VARCHAR(50) PRIMARY KEY,
+    email VARCHAR(50) UNIQUE,
+    type INT,
+    password VARCHAR(255) NOT NULL,
+    heure TIME,
+    confirme INTEGER DEFAULT 0
+);
+
+-- Création de la table Informations
+CREATE TABLE Informations (
+    nom VARCHAR(255),
+    prenom VARCHAR(255),
+    age INT,
+    genre VARCHAR(30),
+    email VARCHAR(50),
+    dateNaissance DATE,
+    type VARCHAR INT,
+    password VARCHAR(255),
+    photo VARCHAR(255),
+    fonction VARCHAR(30),
+    service VARCHAR(30),
+    niveau INT,
+    pseudonyme VARCHAR(50) PRIMARY KEY,
+    points FLOAT,
+    nbAction INT,
+    nbAcces INT,
+    FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+);
+
+
+

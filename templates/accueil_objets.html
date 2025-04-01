@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail Objets - Accueil</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/accueil.css') }}">
+    <script src="https://kit.fontawesome.com/5f62a88e26.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+
+    <div class="recherche">
+        <form method="get" action="/search_objets">
+            <input type="search" name="search-input" placeholder="Rechercher des objets connectés par ID">
+            <select name="service-filter">
+                <option value="">Tous les services</option>
+                <option value="Urgences">Urgences</option>
+                <option value="Pediatrie">Pédiatrie</option>
+                <option value="Anesthesie">Anesthésie-Réanimation</option>
+                <option value="Oncologie">Oncologie</option>
+                <option value="Psychiatrie">Psychiatrie</option>
+            </select>
+            <br><br><br>
+            <label for="type-filter">Choisissez un dispositif :</label>
+            <select id="type-filter" name="type-filter">
+                <option value=""> Tous les dispositifs</option>
+                <option value="thermostat">Thermostat</option>
+                <option value="ventilation">ventilation</option>
+                <optgroup label="Imagerie">
+                    <option value="irm">IRM</option>
+                    <option value="radio">Radio</option>
+                    <option value="scanner">Scanner</option>
+                </optgroup>
+
+                <optgroup label="Analyse">
+                    <option value="microscope">Microscope</option>
+                    <option value="refrigerateur">Réfrigérateur</option>
+                </optgroup>
+
+                <optgroup label="Chirurgie">
+                    <option value="robot_chirurgical">Robot chirurgical</option>
+                </optgroup>
+
+                <optgroup label="Réanimation">
+                    <option value="ventilation_artificielle">Ventilation artificielle</option>
+                    <option value="scope">Scope</option>
+                    <option value="pompe_nutritionnelle">Pompe nutritionnelle</option>
+                </optgroup>
+
+                <optgroup label="Psychiatrie">
+                    <option value="robot_rtms">Robot RTMS</option>
+                </optgroup>
+            </select>
+
+            <br><br><br>
+            <label for="marque-filter">Choisissez une marque :</label>
+            <select id="marque-filter" name="marque-filter">
+                <option value=""> Toutes les marques</option>
+                <optgroup label="Imagerie médicale">
+                    <option value="philips">Philips Healthcare</option>
+                    <option value="siemens">Siemens Healthineers</option>
+                    <option value="ge">General Electric (GE) Healthcare</option>
+                    <option value="canon">Canon Medical Systems</option>
+                </optgroup>
+
+                <optgroup label="Dispositifs de diagnostic">
+                    <option value="roche diagnostics">Roche Diagnostics</option>
+                    <option value="abbott">Abbott Laboratories</option>
+                    <option value="medtronic">Medtronic</option>
+                </optgroup>
+
+                <optgroup label="Chirurgie">
+                    <option value="intuitive">Intuitive Surgical</option>
+                    <option value="jnj">Johnson & Johnson (Ethicon)</option>
+                    <option value="stryker">Stryker</option>
+                </optgroup>
+
+                <optgroup label="Réanimation et soins intensifs">
+                    <option value="draeger">Draeger</option>
+                    <option value="baxter">Baxter International</option>
+                    <option value="resmed">ResMed</option>
+                </optgroup>
+
+                <optgroup label="Autres domaines">
+                    <option value="3m">3M Health Care</option>
+                    <option value="bd">Becton Dickinson (BD)</option>
+                </optgroup>
+            </select>
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
+        </form>
+    </div>
+    <div class="bouton">
+        <a href="ajout-objet.html"><button>Ajouter un objet <br>(administrateur/complexe seulement)</button></a>
+    </div>
+</body>

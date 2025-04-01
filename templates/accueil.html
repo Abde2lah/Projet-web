@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hôpital Saint-Exemple - Accueil</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/accueil.css') }}">
+    <script src="https://kit.fontawesome.com/5f62a88e26.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Section des boutons de connexion et d'inscription -->
+    <div class="bouton">
+        {% if connecte == False %}
+        <a href="{{ url_for('connexion') }}"><button>Se connecter</button></a>
+        <a href="{{ url_for('creer_profil') }}"><button>S'inscrire</button></a>
+        {% else %}
+        <a href="{{ url_for('accueil_objets') }}"><button>Accès objets</button></a>
+        {% endif %}
+    </div>
+    
+    <!-- Texte d'accueil -->
+    <div class="texte-bienvenue">
+        Bienvenue à l'Hôpital de Saint-Exemple
+    </div>
+    
+    <br>
+
+    <div class="texte-intro">
+        Notre hôpital s'engage à fournir des soins de qualité à tous nos patients.
+        Nous disposons d'une équipe de médecins et d'infirmières dévoués, prêts à vous aider.
+    </div>
+    
+    <br><br><br>
+
+    <!-- Barre de recherche -->
+    <div class="recherche">
+        <form method="get" action="/search">
+            <input type="search" name="search-input" placeholder="Rechercher un nom">
+            <select name="service-filter">
+                <option value="">Tous les services</option>
+                <option value="Urgences">Urgences</option>
+                <option value="Pediatrie">Pédiatrie</option>
+                <option value="Anesthesie">Anesthésie-Réanimation</option>
+                <option value="Oncologie">Oncologie</option>
+                <option value="Psychiatrie">Psychiatrie</option>
+            </select>
+            <select name="fonction-filter">
+                <option value="">Toutes les fonctions</option>
+                <option value="Medecin">Médecin</option>
+                <option value="Infirmier">Infirmier</option>
+                <option value="Aide-soignant">Aide-soignant</option>
+                <option value="Autre soignant">Autre soignant</option>
+                <option value="Technicien">Technicien</option>
+                <option value="Administratif">Administratif</option>
+            </select>
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
+        </form>
+    </div>
+    
+    <br><br><br>
+
+    <!-- Informations pratiques -->
+    <div class="infos">
+        <h2>Informations pratiques</h2>
+        <i class="fa-solid fa-location-dot"></i> Adresse : 123 Rue de l'Hôpital, Ville-Exemple
+        <br><br>
+        <i class="fa-solid fa-phone"></i> Téléphone : 01 23 45 67 89
+        <br><br>
+        Horaires d'ouverture:
+        <br><br>
+        Ouvert 24h/24, 7j/7 pour les urgences.
+        <br><br>
+        Consultations : du lundi au vendredi, de 9h à 17h.
+    </div>
+
+    <!-- Carte Google Maps -->
+    <div class="map">
+        <iframe frameborder="0" id="i3xrop"
+            src="https://maps.google.com/maps?&q=Rue de l'Hopital&z=21&t=q&output=embed" width="464"
+            height="353"></iframe>
+    </div>
+
+    <br><br><br><br>
+
+    <div class="actu">
+        <h2 style="color: darkcyan;">Dernière actualité</h2>
+        <h3>Un simulateur d'IRM : pour quoi faire ?</h3>
+        Découvrez le simulateur d'IRM installé au CRC et inauguré le 15 janvier : Arnaud Cachia, professeur de neurosciences cognitives et chercheur au LaPsyDé nous explique son rôle et ses différents usages.
+        <br><br>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/IRM_3T_clinique_NeuroSpin.jpg" alt="Photo d'un irm" width="464" height="353">
+        <br>
+        <button>Lire l'article</button>
+    </div>
+        <div class="button-group">
+        {% if connecte %}
+        <a href="{{ url_for('profile') }}" class="button-view">Visualiser le profil</a>
+        <a href="{{ url_for('modifier_profil') }}" class="button-view"><button name="continue">Modifier le profil</button></a>
+        {% endif %}
+    </div>
+
+</body>
+</html>
