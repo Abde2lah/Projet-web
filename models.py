@@ -69,13 +69,22 @@ def get_user_by_username(pseudo):
             con.close()
 
 def get_user_by_email(email):
-    con = sql.connect("donnees.db")
-    cur = con.cursor()
-    cur.execute("SELECT * FROM Connexion WHERE email = ?", (email,))
-    user = cur.fetchone()
-    cur.close()
-    con.close()
-    return user
+    try:
+        con = sql.connect("donnees.db")
+        cur = con.cursor()
+        logging.info(f"Recherche d'un utilisateur avec l'email : {email}")
+        cur.execute("SELECT * FROM Connexion WHERE email = ?", (email,))
+        user = cur.fetchone()
+        return user
+    except sql.Error as e:
+        logging.error(f"Erreur SQL lors de la récupération de l'email : {e}")
+        return None
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'con' in locals() and con:
+            con.close()
+
 
 def getUserInfos(username):
     try:
