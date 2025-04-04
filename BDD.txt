@@ -53,7 +53,7 @@ CREATE TABLE Salle (
     Service VARCHAR(255),
     ID INT, 
     pseudonyme VARCHAR(255),
-    FOREIGN KEY (ObjetID) REFERENCES Objet(ID),
+    FOREIGN KEY (ID) REFERENCES Objet(ID),
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 

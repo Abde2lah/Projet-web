@@ -1,33 +1,52 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">7
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter une Salle</title>
-    
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
 </head>
 <body>
-    <h1>Ajouter une Salle</h1>
+    <div class="container">
+        <h1>Ajouter une Salle</h1>
 
-    <form action="/ajouter_salle" method="POST">
-        <label for="NumeroSalle">Numéro de la Salle:</label>
-        <input type="number" name="NumeroSalle" required><br><br>
+        <form action="{{ url_for('ajouter_salle') }}" method="POST">
+            <label for="NumeroSalle">Numéro de la Salle :</label>
+            <input type="number" name="NumeroSalle" required>
 
-        <label for="Etage">Étage:</label>
-        <input type="number" name="Etage" required><br><br>
+            <label for="Etage">Étage :</label>
+            <input type="number" name="Etage" required>
 
-        <label for="Service">Service:</label>
-        <input type="text" name="Service" required><br><br>
+            <label for="Service">Service :</label>
+            <select name="Service" required>
+                <option value="">-- Sélectionner un service --</option>
+                <option value="Urgences">Urgences</option>
+                <option value="Pédiatrie">Pédiatrie</option>
+                <option value="Chirurgie">Chirurgie</option>
+                <option value="Cardiologie">Cardiologie</option>
+                <option value="Radiologie">Radiologie</option>
+            </select>
 
-        <label for="ObjetID">ID de l'Objet associé:</label>
-        <input type="number" name="ObjetID" required><br><br>
+            <label for="ObjetID">Objet associé :</label>
+            <select name="ObjetID" required>
+                <option value="ID">[ID] Nom – Type – Marque – Service</option>
+                {% for objet in objets %}
+                <option value="{{ objet[0] }}">
+                    [{{ objet[0] }}] {{ objet[8] }} – {{ objet[9] }} – {{ objet[7] }} – {{ objet[6] }}
+                </option>
+                                {% endfor %}
+            </select>
 
-        <label for="pseudonyme">Pseudonyme de l'utilisateur:</label>
-        <input type="text" name="pseudonyme" required><br><br>
+            <label for="pseudonyme">Utilisateur responsable :</label>
+            <select name="pseudonyme" required>
+                <option value="">-- Sélectionner un utilisateur --</option>
+                {% for user in utilisateurs %}
+                    <option value="{{ user[0] }}">{{ user[0] }}</option>
+                {% endfor %}
+            </select>
 
-        <input type="submit" value="Ajouter la Salle">
-    </form>
-
+            <button type="submit">➕ Ajouter la Salle</button>
+        </form>
+    </div>
 </body>
 </html>

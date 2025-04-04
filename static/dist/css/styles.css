@@ -193,3 +193,10 @@ footer {
     margin: 0 auto 20px;
     display: inline-block;
 }
+
+.btn.danger {
+    background-color: #cc1e1e;
+}
+.btn.danger:hover {
+    background-color: #a50000;
+}

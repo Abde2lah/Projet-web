@@ -51,6 +51,21 @@ def accueil():
 def accueilPublic():
     return render_template('accueilPublic.html')
 
+@app.route('/gestion_ressources')
+def gestion_ressources():
+    if 'username' not in session:
+        flash('Veuillez vous connecter pour accéder à cette page')
+        return redirect(url_for('connexion'))
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM Salle")
+    salles = cur.fetchall()
+    cur.execute("SELECT * FROM Objet")
+    objets = cur.fetchall()
+    con.close()
+    return render_template('gestion_ressources.html', salles=salles, objets=objets)
+
 @app.route('/profile')
 def profile():
     if 'username' in session:
@@ -142,76 +157,6 @@ def confirmer_compte(token):
         return redirect(url_for('connexion'))
     return redirect(url_for('creer_profil'))
 
-@app.route('/search', methods=['GET'])
-def search():
-    search_query = request.args.get('search-input')
-    service_filter = request.args.get('service-filter')
-    function_filter = request.args.get('fonction-filter')
-
-    con = sql.connect("donnees.db")
-    cur = con.cursor()
-
-    sql_query = "SELECT nom, prenom, fonction, service, pseudonyme FROM Informations WHERE 1=1"
-    params = []
-
-    if search_query:
-        sql_query += " AND (nom LIKE ? OR service LIKE ?)"
-        params.extend(['%' + search_query + '%', '%' + search_query + '%'])
-    if service_filter:
-        sql_query += " AND service = ?"
-        params.append(service_filter)
-    if function_filter:
-        sql_query += " AND fonction = ?"
-        params.append(function_filter)
-
-    cur.execute(sql_query, params)
-    results = cur.fetchall()
-    con.close()
-
-    return render_template('resultats.html', results=results, query=search_query)
-
-@app.route('/accueil_objets')
-def accueil_objets():
-    if 'username' in session:
-        return render_template('accueil_objets.html')
-    flash('Veuillez vous connecter pour accéder à cette page')
-    return redirect(url_for('connexion'))
-
-@app.route('/search_objets', methods=['GET'])
-def search_objets():
-    search_query = request.args.get('search-input')
-    service_filter = request.args.get('service-filter')
-    type_filter = request.args.get('type-filter')
-    marque_filter = request.args.get('marque-filter')
-
-    con = sql.connect("donnees.db")
-    cur = con.cursor()
-
-    sql_query = "SELECT * FROM Objet WHERE 1=1"
-    params = []
-
-    if search_query:
-        sql_query += " AND (ID LIKE ? OR nom LIKE ?)"
-        params.extend(['%' + search_query + '%', '%' + search_query + '%'])
-    if service_filter:
-        sql_query += " AND service = ?"
-        params.append(service_filter)
-    if type_filter:
-        sql_query += " AND type = ?"
-        params.append(type_filter)
-    if marque_filter:
-        sql_query += " AND marque = ?"
-        params.append(marque_filter)
-
-    cur.execute(sql_query, params)
-    results = cur.fetchall()
-    pseudonyme = session.get('username')
-    if pseudonyme:
-        update_user_points(pseudonyme, 1, 1)
-    con.close()
-
-    return render_template('resultats-objets.html', results=results, query=search_query)
-
 @app.route('/ajout-objet.html', methods=['GET', 'POST'])
 def creer_objet():
     if "username" not in session:
@@ -234,7 +179,7 @@ def creer_objet():
         increment_user_actions(pseudonyme)
 
         flash("Objet ajouté avec succès !")
-        return redirect(url_for('accueil_objets'))
+        return redirect(url_for('gestion_ressources'))
 
     return render_template('ajout-objet.html')
 
@@ -246,6 +191,58 @@ def liste_utilisateurs():
     users = cursor.fetchall()
     conn.close()
     return render_template("utilisateurs.html", users=users)
+
+@app.route('/ajouter_salle', methods=['GET', 'POST'])
+def ajouter_salle():
+    if 'username' not in session:
+        flash("Veuillez vous connecter.")
+        return redirect(url_for('connexion'))
+
+    conn = sql.connect("donnees.db")
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        numero = request.form['NumeroSalle']
+        etage = request.form['Etage']
+        service = request.form['Service']
+        objet_id = request.form['ObjetID']
+        pseudonyme = request.form['pseudonyme']
+
+        cursor.execute("""
+            INSERT INTO Salle (NumeroSalle, Etage, Service, ObjetID, pseudonyme)
+            VALUES (?, ?, ?, ?, ?)
+        """, (numero, etage, service, objet_id, pseudonyme))
+        conn.commit()
+        conn.close()
+        flash("Salle ajoutée avec succès.")
+        return redirect(url_for('gestion_ressources'))
+
+    cursor.execute("SELECT pseudonyme FROM Informations")
+    utilisateurs = cursor.fetchall()
+    cursor.execute("SELECT ID, nom FROM Objet")
+    objets = cursor.fetchall()
+    conn.close()
+    return render_template('ajouter_salle.html', utilisateurs=utilisateurs, objets=objets)
+
+@app.route('/supprimer_salle/<int:id>', methods=['POST'])
+def supprimer_salle(id):
+    if 'username' not in session:
+        flash("Connexion requise")
+        return redirect(url_for('connexion'))
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+    try:
+        cur.execute("DELETE FROM Salle WHERE ID = ?", (id,))
+        con.commit()
+        flash("Salle supprimée avec succès.")
+    except Exception as e:
+        flash(f"Erreur : {e}")
+    finally:
+        con.close()
+
+    return redirect(url_for('gestion_ressources'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')

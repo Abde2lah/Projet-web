@@ -1,22 +1,47 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des Ressources</title>
+    <title>Gestion des ressources</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
-    <script src="https://kit.fontawesome.com/5f62a88e26.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
-        <h2>Gestion des Ressources</h2>
-        <p>Choisissez une action :</p>
+        <h1>Gestion des Salles et Objets</h1>
 
         <div class="button-group">
-            <a href="{{ url_for('ajouter_salle') }}"><button><i class="fa-solid fa-door-open"></i> Ajouter une salle</button></a>
-            <a href="{{ url_for('accueil_objets') }}"><button><i class="fa-solid fa-boxes-stacked"></i> Accès objets</button></a>
+            <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
+            <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
         </div>
-        <br>
-        <a href="{{ url_for('accueil') }}"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+
+        <h2>Liste des Salles</h2>
+
+        {% for salle in salles %}
+        <div class="card">
+            <h3>Salle {{ salle[0] }} – {{ salle[2] }}</h3>
+            <p><strong>Étage :</strong> {{ salle[1] }}</p>
+            <p><strong>Objet associé :</strong> {{ salle[3] }}</p>
+            <p><strong>Utilisateur :</strong> {{ salle[4] }}</p>
+
+            <form action="{{ url_for('supprimer_salle', id=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
+                <button class="btn danger" type="submit">🗑 Supprimer</button>
+            </form>
+        </div>
+        {% endfor %}
+
+        <h2>Liste des Objets</h2>
+
+        {% for objet in objets %}
+        <div class="card">
+            <h3>{{ objet[8] }} – {{ objet[9] }}</h3>
+            <p><strong>ID :</strong> {{ objet[0] }}</p>
+            <p><strong>Service :</strong> {{ objet[6] }}</p>
+            <p><strong>Température :</strong> {{ objet[1] }}°C → {{ objet[2] }}°C</p>
+            <p><strong>Marque :</strong> {{ objet[7] }}</p>
+            <p><strong>Mode :</strong> {{ objet[3] }}</p>
+        </div>
+        {% endfor %}
     </div>
 </body>
 </html>
