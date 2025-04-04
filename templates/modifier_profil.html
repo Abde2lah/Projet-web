@@ -4,23 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier le Profil - Hôpital</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/modifier_profil.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
         <h2><i class="fas fa-user-md"></i> Modifier votre profil</h2>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         <form method="POST" enctype="multipart/form-data">
+            <!-- Nom -->
             <label><i class="fas fa-user"></i> Nom :</label>
-            <input type="text" name="nom" value="{{ user[0] }}">
+            <input type="text" name="nom" value="{{ user[0] }}" required>
 
+            <!-- Prénom -->
             <label><i class="fas fa-user"></i> Prénom :</label>
-            <input type="text" name="prenom" value="{{ user[1] }}">
+            <input type="text" name="prenom" value="{{ user[1] }}" required>
 
+            <!-- Âge -->
             <label><i class="fas fa-birthday-cake"></i> Âge :</label>
-            <input type="number" name="age" value="{{ user[2] }}">
+            <input type="number" name="age" value="{{ user[2] }}" required>
 
+            <!-- Genre -->
             <label><i class="fas fa-venus-mars"></i> Genre :</label>
             <select name="genre">
                 <option value="Homme" {% if user[3] == "Homme" %}selected{% endif %}>Homme</option>
@@ -28,35 +40,40 @@
                 <option value="Autre" {% if user[3] == "Autre" %}selected{% endif %}>Autre</option>
             </select>
 
+            <!-- Email -->
             <label><i class="fas fa-envelope"></i> Email :</label>
-            <input type="email" name="email" value="{{ user[4] }}">
+            <input type="email" name="email" value="{{ user[4] }}" required>
 
+            <!-- Date de naissance -->
             <label><i class="fas fa-calendar"></i> Date de naissance :</label>
-            <input type="date" name="dateNaissance" value="{{ user[5] }}">
+            <input type="date" name="dateNaissance" value="{{ user[5] }}" required>
 
+            <!-- Fonction -->
             <label><i class="fas fa-user-md"></i> Fonction :</label>
             <input type="text" name="fonction" value="{{ user[9] }}">
 
+            <!-- Service -->
             <label><i class="fas fa-briefcase-medical"></i> Service :</label>
             <input type="text" name="service" value="{{ user[10] }}">
 
+            <!-- Nouveau mot de passe -->
             <label><i class="fas fa-key"></i> Nouveau mot de passe :</label>
             <input type="password" name="password" placeholder="Laissez vide si inchangé">
 
+            <!-- Photo actuelle -->
             <label><i class="fas fa-image"></i> Photo de profil actuelle :</label>
-            <img src="{{ user[8] if user[8] else url_for('static', filename='images/default.png') }}" 
-                 alt="Photo de profil">
+            <img src="{{ url_for('static', filename='images/' + user[8]) if user[8] else url_for('static', filename='images/default.png') }}" 
+                 alt="Photo de profil" width="150" height="150">
 
-            <form method="POST" enctype="multipart/form-data">
-                    <label for="photo">Télécharger une photo de profil:</label>
-                    <input type="file" name="photo" id="photo">
-                    <button type="submit">Mettre à jour</button>
-            </form>
-                
+            <!-- Nouvelle photo -->
+            <label><i class="fas fa-upload"></i> Télécharger une nouvelle photo (facultatif) :</label>
+            <input type="file" name="photo" accept="image/*">
 
+            <!-- Bouton de soumission -->
             <button type="submit"><i class="fas fa-save"></i> Mettre à jour</button>
         </form>
 
+        <br>
         <a href="{{ url_for('profile') }}"><i class="fas fa-arrow-left"></i> Retour au profil</a>
     </div>
 </body>

@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Hôpital Saint-Exemple - Accueil</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/accueil.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
     <script src="https://kit.fontawesome.com/5f62a88e26.js" crossorigin="anonymous"></script>
+    
 </head>
 
 <body>
@@ -105,10 +106,8 @@
         <button>Lire l'article</button>
     </div>
         <div class="button-group">
-        {% if connecte %}
         <a href="{{ url_for('profile') }}" class="button-view">Visualiser le profil</a>
         <a href="{{ url_for('modifier_profil') }}" class="button-view"><button name="continue">Modifier le profil</button></a>
-        {% endif %}
     </div>
 
 </body>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Ressources</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <script src="https://kit.fontawesome.com/5f62a88e26.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Gestion des Ressources</h2>
+        <p>Choisissez une action :</p>
+
+        <div class="button-group">
+            <a href="{{ url_for('ajouter_salle') }}"><button><i class="fa-solid fa-door-open"></i> Ajouter une salle</button></a>
+            <a href="{{ url_for('accueil_objets') }}"><button><i class="fa-solid fa-boxes-stacked"></i> Accès objets</button></a>
+        </div>
+        <br>
+        <a href="{{ url_for('accueil') }}"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</a>
+    </div>
+</body>
+</html>
