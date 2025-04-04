@@ -1,23 +1,42 @@
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_mail import Mail, Message
 import sqlite3 as sql
-import bcrypt 
-from itsdangerous import URLSafeTimedSerializer
-from flask import current_app
-import datetime
+import bcrypt
+from config import Config
+from models import *
 import os
-from werkzeug.utils import secure_filename 
+from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer
 
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+app = Flask(__name__, static_folder='static')
+app.config.from_object(Config)
+app.secret_key = 'your_secret_key'
+mail = Mail(app)
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def envoyer_email_confirmation(destinataire, nom_utilisateur):
+    try:
+        token = generer_token_confirmation(destinataire)
+        lien_confirmation = url_for('confirmer_compte', token=token, _external=True) # _external=True pour avoir l'URL complète
+
+        msg = Message('Confirmation de compte', sender='testgroupe3cytech@gmail.com', recipients=[destinataire])
+        msg.html = render_template('email_confirmation.html', nom_utilisateur=nom_utilisateur, lien_confirmation=lien_confirmation) # Utilise un template HTML
+        mail.send(msg)
+        print("Email de confirmation envoyé !")
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email : {e}")
+
 
 def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme):
     try:
         con = sql.connect("donnees.db")
         cur = con.cursor()
-        now = datetime.datetime.now()
 
         if not photo or not hasattr(photo, 'filename') or not allowed_file(photo.filename):
             photo_path = "/static/images/default.png"
@@ -34,9 +53,9 @@ def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, passwo
         """, (nom, prenom, age, genre, email, dateNaissance, type_user, password, photo_path, fonction, service, pseudonyme))
 
         cur.execute("""
-            INSERT INTO Connexion (pseudonyme, email, type, password, heure, confirme) 
-            VALUES (?, ?, ?, ?, ?, 0)
-        """, (pseudonyme, email, type_user, password, now))
+            INSERT INTO Connexion (pseudonyme, email, type, password) 
+            VALUES (?, ?, ?, ?)
+        """, (pseudonyme, email, type_user, password))
 
         con.commit()
     except sql.Error as e:

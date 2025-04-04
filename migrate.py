@@ -65,3 +65,4 @@ def create_salle_table():
 # Exécution de la fonction pour créer la table
 if __name__ == "__main__":
     create_salle_table()
+

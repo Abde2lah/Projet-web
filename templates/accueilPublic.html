@@ -27,8 +27,6 @@
         {% if connecte == False %}
         <a href="{{ url_for('connexion') }}"><button>Se connecter</button></a>
         <a href="{{ url_for('creer_profil') }}"><button>S'inscrire</button></a>
-        {% else %}
-        <a href="{{ url_for('accueil_objets') }}"><button>Accès objets</button></a>
         {% endif %}
     </div>
     

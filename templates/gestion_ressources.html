@@ -24,9 +24,13 @@
             <p><strong>Objet associé :</strong> {{ salle[3] }}</p>
             <p><strong>Utilisateur :</strong> {{ salle[4] }}</p>
 
-            <form action="{{ url_for('supprimer_salle', id=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
+            <form action="{{ url_for('supprimer_salle', NumeroSalle=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
                 <button class="btn danger" type="submit">🗑 Supprimer</button>
             </form>
+            <a href="{{ url_for('modifier_salle', NumeroSalle=salle[0]) }}">
+                <button class="btn">✏️ Modifier</button>
+            </a>
+            
         </div>
         {% endfor %}
 

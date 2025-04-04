@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Salle {{ salle[0] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Modifier la Salle {{ salle[0] }}</h1>
+
+        <form method="POST">
+            <label>Étage :</label>
+            <input type="number" name="Etage" value="{{ salle[1] }}" required>
+
+            <label>Service :</label>
+            <select name="Service" required>
+                {% for s in ['Urgences', 'Pédiatrie', 'Chirurgie', 'Cardiologie', 'Radiologie'] %}
+                    <option value="{{ s }}" {% if salle[2] == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Objet associé :</label>
+            <select name="ObjetID" required>
+                {% for objet in objets %}
+                    <option value="{{ objet[0] }}" {% if salle[3] == objet[0] %}selected{% endif %}>
+                        [{{ objet[0] }}] {{ objet[1] }} – {{ objet[2] }} – {{ objet[3] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Utilisateur :</label>
+            <select name="pseudonyme" required>
+                {% for user in utilisateurs %}
+                    <option value="{{ user[0] }}" {% if salle[4] == user[0] %}selected{% endif %}>{{ user[0] }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">💾 Enregistrer les modifications</button>
+        </form>
+    </div>
+</body>
+</html>
