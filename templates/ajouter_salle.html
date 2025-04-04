@@ -27,15 +27,15 @@
                 <option value="Radiologie">Radiologie</option>
             </select>
 
-            <label for="ObjetID">Objet associé :</label>
-            <select name="ObjetID" required>
-                <option value="ID">[ID] Nom – Type – Marque – Service</option>
+            <label for="ObjetID">Objets associés :</label>
+            <select name="ObjetID" multiple>
+                <option value="">Aucun</option>
                 {% for objet in objets %}
                 <option value="{{ objet[0] }}">
-                    [{{ objet[0] }}] {{ objet[8] }} – {{ objet[9] }} – {{ objet[7] }} – {{ objet[6] }}
+                [{{ objet[0] }}] {{ objet[1] }}
                 </option>
-                                {% endfor %}
-            </select>
+                {% endfor %}
+                </select>
 
             <label for="pseudonyme">Utilisateur responsable :</label>
             <select name="pseudonyme" required>

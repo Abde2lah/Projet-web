@@ -20,14 +20,16 @@
                 {% endfor %}
             </select>
 
-            <label>Objet associé :</label>
-            <select name="ObjetID" required>
-                {% for objet in objets %}
-                    <option value="{{ objet[0] }}" {% if salle[3] == objet[0] %}selected{% endif %}>
-                        [{{ objet[0] }}] {{ objet[1] }} – {{ objet[2] }} – {{ objet[3] }}
-                    </option>
-                {% endfor %}
-            </select>
+            <label>Objets associés :</label>
+    <select name="ObjetID" multiple>
+        <option value="">Aucun</option>
+        {% set selected_ids = salle[3].split(',') if salle[3] else [] %}
+        {% for objet in objets %}
+            <option value="{{ objet[0] }}" {% if objet[0]|string in selected_ids %}selected{% endif %}>
+                [{{ objet[0] }}] {{ objet[1] }} – {{ objet[2] }} – {{ objet[3] }}
+            </option>
+        {% endfor %}
+    </select>
 
             <label>Utilisateur :</label>
             <select name="pseudonyme" required>

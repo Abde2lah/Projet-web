@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier l’objet {{ objet[0] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Modifier l’objet n°{{ objet[0] }}</h1>
+        <form method="POST">
+            <label>Nom :</label>
+            <input type="text" name="nom" value="{{ objet[8] }}" required>
+
+            <label>Marque :</label>
+            <input type="text" name="marque" value="{{ objet[7] }}" required>
+
+            <label>Type :</label>
+            <input type="text" name="type" value="{{ objet[9] }}" required>
+
+            <label>Service :</label>
+            <input type="text" name="service" value="{{ objet[6] }}" required>
+
+            <label>Mode :</label>
+            <input type="text" name="mode" value="{{ objet[3] }}" required>
+
+            <label>Connectivité :</label>
+            <input type="text" name="connectivite" value="{{ objet[4] }}" required>
+
+            <label>Batterie :</label>
+            <input type="number" step="0.1" name="batterie" value="{{ objet[5] }}" required>
+
+            <label>Température actuelle :</label>
+            <input type="number" step="0.1" name="TempActuelle" value="{{ objet[1] }}" required>
+
+            <label>Température cible :</label>
+            <input type="number" step="0.1" name="tempcible" value="{{ objet[2] }}" required>
+
+            <label>Dernier réglage :</label>
+            <input type="date" name="dernierReglage" value="{{ objet[10] }}" required>
+
+            <label>Consommation (L) :</label>
+            <input type="number" step="0.1" name="ConsommationL" value="{{ objet[11] }}">
+
+            <label>Consommation (W) :</label>
+            <input type="number" step="0.1" name="ConsommationW" value="{{ objet[12] }}">
+
+            <button type="submit">💾 Enregistrer</button>
+        </form>
+    </div>
+</body>
+</html>

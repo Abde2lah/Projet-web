@@ -53,16 +53,17 @@ def accueilPublic():
 @app.route('/gestion_ressources')
 def gestion_ressources():
     if 'username' not in session:
-        flash('Veuillez vous connecter pour accéder à cette page')
+        flash("Veuillez vous connecter.")
         return redirect(url_for('connexion'))
-
-    con = sql.connect("donnees.db")
-    cur = con.cursor()
+   
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
     cur.execute("SELECT * FROM Salle")
     salles = cur.fetchall()
     cur.execute("SELECT * FROM Objet")
     objets = cur.fetchall()
-    con.close()
+    conn.close()
+
     return render_template('gestion_ressources.html', salles=salles, objets=objets)
 
 @app.route('/ajouter_salle', methods=['GET', 'POST'])
@@ -70,50 +71,9 @@ def ajouter_salle():
     if 'username' not in session:
         flash("Veuillez vous connecter.")
         return redirect(url_for('connexion'))
-    
+
     pseudonyme = session['username']
-    user_type = get_user_type(pseudonyme)  # ✅ ici
-
-    if not user_type or int(user_type[0]) < 2:
-        flash("Accès réservé aux administrateurs.")
-        return redirect(url_for('gestion_ressources'))
-
-
-    conn = sql.connect("donnees.db")
-    cursor = conn.cursor()
-
-    if request.method == 'POST':
-        numero = request.form['NumeroSalle']
-        etage = request.form['Etage']
-        service = request.form['Service']
-        objet_id = request.form['ObjetID']
-        pseudonyme = request.form['pseudonyme']
-
-        cursor.execute("""
-            INSERT INTO Salle (NumeroSalle, Etage, Service, ObjetID, pseudonyme)
-            VALUES (?, ?, ?, ?, ?)
-        """, (numero, etage, service, objet_id, pseudonyme))
-        conn.commit()
-        conn.close()
-        flash("Salle ajoutée avec succès.")
-        return redirect(url_for('gestion_ressources'))
-
-    cursor.execute("SELECT pseudonyme FROM Informations")
-    utilisateurs = cursor.fetchall()
-    cursor.execute("SELECT ID, nom FROM Objet")
-    objets = cursor.fetchall()
-    conn.close()
-    return render_template('ajouter_salle.html', utilisateurs=utilisateurs, objets=objets)
-
-
-@app.route('/modifier_salle/<int:NumeroSalle>', methods=['GET', 'POST'])
-def modifier_salle(NumeroSalle):
-    if 'username' not in session:
-        flash("Connexion requise.")
-        return redirect(url_for('connexion'))
-    
-    pseudonyme = session['username']
-    user_type = get_user_type(pseudonyme)  # ✅ ici
+    user_type = get_user_type(pseudonyme)
 
     if not user_type or int(user_type[0]) < 2:
         flash("Accès réservé aux administrateurs.")
@@ -124,36 +84,77 @@ def modifier_salle(NumeroSalle):
 
     if request.method == 'POST':
         try:
-            etage = request.form.get('Etage')
-            service = request.form.get('Service')
-            objet_id = request.form.get('ID')  # ATTENTION : le champ SQL doit s'appeler ID
-            pseudonyme = request.form.get('pseudonyme')
-
-            print("[DEBUG] Numéro:", NumeroSalle)
-            print("[DEBUG] Données reçues :", etage, service, objet_id, pseudonyme)
+            numero = request.form['NumeroSalle']
+            etage = request.form['Etage']
+            service = request.form['Service']
+            objet_ids = request.form.getlist('ObjetID')
+            objet_id_str = ','.join(objet_ids) if objet_ids else None
+            pseudonyme_form = request.form['pseudonyme']
 
             cur.execute("""
-                UPDATE Salle
-                SET Etage = ?, Service = ?, ID = ?, pseudonyme = ?
-                WHERE NumeroSalle = ?
-            """, (etage, service, objet_id, pseudonyme, NumeroSalle))
+                INSERT INTO Salle (NumeroSalle, Etage, Service, ID, pseudonyme)
+                VALUES (?, ?, ?, ?, ?)
+            """, (numero, etage, service, objet_id_str, pseudonyme_form))
             conn.commit()
-
-            print("[DEBUG] ✅ Mise à jour réussie")
-            flash("Salle modifiée avec succès.")
+            flash("Salle ajoutée avec succès.")
         except Exception as e:
-            print("[DEBUG] ❌ Erreur :", e)
-            flash("Erreur lors de la modification de la salle.")
+            conn.rollback()
+            flash(f"Erreur lors de l'ajout : {e}")
         finally:
             conn.close()
 
         return redirect(url_for('gestion_ressources'))
 
-    # -- GET : préremplir le formulaire
+    cur.execute("SELECT pseudonyme FROM Informations")
+    utilisateurs = cur.fetchall()
+    cur.execute("SELECT ID, nom FROM Objet")
+    objets = cur.fetchall()
+    conn.close()
+    return render_template('ajouter_salle.html', utilisateurs=utilisateurs, objets=objets)
+
+@app.route('/modifier_salle/<int:NumeroSalle>', methods=['GET', 'POST'])
+def modifier_salle(NumeroSalle):
+    if 'username' not in session:
+        flash("Connexion requise.")
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)
+
+    if not user_type or int(user_type[0]) < 2:
+        flash("Modification réservée aux administrateurs.")
+        return redirect(url_for('gestion_ressources'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        try:
+            etage = request.form['Etage']
+            service = request.form['Service']
+            objet_ids = request.form.getlist('ObjetID')
+            objet_id_str = ','.join(objet_ids) if objet_ids else None
+            pseudonyme_form = request.form['pseudonyme']
+
+            cur.execute("""
+                UPDATE Salle
+                SET Etage = ?, Service = ?, ID = ?, pseudonyme = ?
+                WHERE NumeroSalle = ?
+            """, (etage, service, objet_id_str, pseudonyme_form, NumeroSalle))
+            conn.commit()
+            flash("Salle modifiée avec succès.")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Erreur lors de la modification : {e}")
+        finally:
+            conn.close()
+
+        return redirect(url_for('gestion_ressources'))
+
     cur.execute("SELECT * FROM Salle WHERE NumeroSalle = ?", (NumeroSalle,))
     salle = cur.fetchone()
 
-    cur.execute("SELECT ID, nom FROM Objet")
+    cur.execute("SELECT ID, nom, marque, type FROM Objet")
     objets = cur.fetchall()
 
     cur.execute("SELECT pseudonyme FROM Connexion")
@@ -313,6 +314,85 @@ def liste_utilisateurs():
     users = cursor.fetchall()
     conn.close()
     return render_template("utilisateurs.html", users=users)
+
+@app.route('/modifier_objet/<int:id>', methods=['GET', 'POST'])
+def modifier_objet(id):
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)
+
+    if not user_type or int(user_type[0]) < 2:
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for('gestion_ressources'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        try:
+            data = request.form
+            cur.execute("""
+                UPDATE Objet
+                SET TempActuelle=?, tempcible=?, mode=?, connectivite=?, batterie=?, service=?, marque=?, nom=?, type=?, dernierReglage=?, ConsommationL=?, ConsommationW=?
+                WHERE ID=?
+            """, (
+                data['TempActuelle'], data['tempcible'], data['mode'], data['connectivite'],
+                data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
+                data['dernierReglage'], data['ConsommationL'], data['ConsommationW'], id))
+            conn.commit()
+            flash("Objet modifié avec succès.")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Erreur lors de la modification : {e}")
+        finally:
+            conn.close()
+
+        return redirect(url_for('gestion_ressources'))
+
+    cur.execute("SELECT * FROM Objet WHERE ID = ?", (id,))
+    objet = cur.fetchone()
+    conn.close()
+    return render_template('modifier_objet.html', objet=objet)
+
+@app.route('/supprimer_objet/<id>', methods=['POST'])
+def supprimer_objet(id):
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)
+
+    if not user_type or int(user_type[0]) < 2:
+        flash("Suppression réservée aux administrateurs.")
+        return redirect(url_for('gestion_ressources'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    try:
+        # Nettoyer les références dans Salle
+        cur.execute("SELECT NumeroSalle, ID FROM Salle")
+        salles = cur.fetchall()
+        for salle in salles:
+            ids = salle[1].split(',') if salle[1] else []
+            if id in ids:
+                ids.remove(id)
+                new_ids = ','.join(ids) if ids else None
+                cur.execute("UPDATE Salle SET ID = ? WHERE NumeroSalle = ?", (new_ids, salle[0]))
+
+        # Supprimer l'objet
+        cur.execute("DELETE FROM Objet WHERE ID = ?", (id,))
+        conn.commit()
+        flash("Objet supprimé et dissocié des salles.")
+    except Exception as e:
+        conn.rollback()
+        flash(f"Erreur lors de la suppression : {e}")
+    finally:
+        conn.close()
+
+    return redirect(url_for('gestion_ressources'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')

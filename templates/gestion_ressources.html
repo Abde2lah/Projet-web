@@ -44,6 +44,10 @@
             <p><strong>Température :</strong> {{ objet[1] }}°C → {{ objet[2] }}°C</p>
             <p><strong>Marque :</strong> {{ objet[7] }}</p>
             <p><strong>Mode :</strong> {{ objet[3] }}</p>
+            <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
+                <button type="submit">🗑 Supprimer</button>
+            </form>
+            
         </div>
         {% endfor %}
     </div>
