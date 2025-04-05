@@ -46,32 +46,7 @@
     
     <br><br><br>
 
-    <!-- Barre de recherche -->
-    <div class="recherche">
-        <form method="get" action="/search">
-            <input type="search" name="search-input" placeholder="Rechercher un nom">
-            <select name="service-filter">
-                <option value="">Tous les services</option>
-                <option value="Urgences">Urgences</option>
-                <option value="Pediatrie">Pédiatrie</option>
-                <option value="Anesthesie">Anesthésie-Réanimation</option>
-                <option value="Oncologie">Oncologie</option>
-                <option value="Psychiatrie">Psychiatrie</option>
-            </select>
-            <select name="fonction-filter">
-                <option value="">Toutes les fonctions</option>
-                <option value="Medecin">Médecin</option>
-                <option value="Infirmier">Infirmier</option>
-                <option value="Aide-soignant">Aide-soignant</option>
-                <option value="Autre soignant">Autre soignant</option>
-                <option value="Technicien">Technicien</option>
-                <option value="Administratif">Administratif</option>
-            </select>
-            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
-        </form>
-    </div>
-    
-    <br><br><br>
+
 
     <!-- Informations pratiques -->
     <div class="infos">
@@ -106,7 +81,7 @@
         <button>Lire l'article</button>
     </div>
         <div class="button-group">
-        <a href="{{ url_for('profile') }}" class="button-view">Visualiser le profil</a>
+        <a href="{{ url_for('profile') }}" class="button-view"><button name="continue">Visualiser le profil</button></a>
         <a href="{{ url_for('modifier_profil') }}" class="button-view"><button name="continue">Modifier le profil</button></a>
     </div>
 

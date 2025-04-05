@@ -96,6 +96,8 @@ def ajouter_salle():
                 VALUES (?, ?, ?, ?, ?)
             """, (numero, etage, service, objet_id_str, pseudonyme_form))
             conn.commit()
+            update_user_points(pseudonyme, 0.25, 0)
+            increment_user_actions(pseudonyme)
             flash("Salle ajoutée avec succès.")
         except Exception as e:
             conn.rollback()
@@ -142,6 +144,8 @@ def modifier_salle(NumeroSalle):
                 WHERE NumeroSalle = ?
             """, (etage, service, objet_id_str, pseudonyme_form, NumeroSalle))
             conn.commit()
+            update_user_points(pseudonyme, 0.25, 0)
+            increment_user_actions(pseudonyme)
             flash("Salle modifiée avec succès.")
         except Exception as e:
             conn.rollback()
@@ -181,6 +185,9 @@ def supprimer_salle(NumeroSalle):
     try:
         cur.execute("DELETE FROM Salle WHERE NumeroSalle = ?", (NumeroSalle,))
         conn.commit()
+        update_user_points(pseudonyme, 0.25, 0)
+        increment_user_actions(pseudonyme)
+        # Supprimer les références à cette salle dans la table Objet
         flash("Salle supprimée avec succès.")
     except Exception as e:
         flash(f"Erreur : {e}")
@@ -219,6 +226,8 @@ def modifier_profil():
         hashed_password = bcrypt.hashpw(nouveau_mdp.encode('utf-8'), bcrypt.gensalt()) if nouveau_mdp else None
 
         update_user_info(pseudonyme, nom, prenom, age, genre, email, date_naissance, fonction, service, hashed_password, photo)
+        update_user_points(pseudonyme, 0.25, 0)
+        increment_user_actions(pseudonyme)
         flash("Profil mis à jour avec succès !")
         return redirect(url_for('profile'))
 
@@ -234,12 +243,61 @@ def creer_profil():
     if request.method == 'POST':
         data = request.form
         photo = request.files.get('photo')
+
+        # Vérification de tous les champs requis
+        champs_obligatoires = ['nom', 'prenom', 'age', 'genre', 'email', 'dateNaissance',
+                               'type', 'mot_de_passe', 'fonction', 'service', 'pseudonyme',
+                               'niveau', 'points', 'nbAction']
+
+        for champ in champs_obligatoires:
+            if not data.get(champ):
+                flash(f"Le champ '{champ}' est obligatoire.")
+                return redirect(url_for('creer_profil'))
+
+        # Hash du mot de passe
         hashed_password = bcrypt.hashpw(data['mot_de_passe'].encode('utf-8'), bcrypt.gensalt())
-        insert_user(data['nom'], data['prenom'], data['age'], data['genre'], data['email'], data['dateNaissance'],
-                    data['type'], hashed_password, photo, data['fonction'], data['service'], data['pseudonyme'])
-        envoyer_email_confirmation(data['email'], data['pseudonyme'])
-        return redirect(url_for('connexion'))
+
+        try:
+            insert_user(
+                nom=data['nom'],
+                prenom=data['prenom'],
+                age=int(data['age']),
+                genre=data['genre'],
+                email=data['email'],
+                dateNaissance=data['dateNaissance'],
+                type_user=int(data['type']),
+                password=hashed_password,
+                photo=photo,
+                fonction=data['fonction'],
+                service=data['service'],
+                pseudonyme=data['pseudonyme']
+            )
+
+            # Mise à jour des autres champs
+            conn = sql.connect("donnees.db")
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE Informations SET niveau = ?, points = ?, nbAction = ?
+                WHERE pseudonyme = ?
+            """, (
+                int(data['niveau']),
+                float(data['points']),
+                int(data['nbAction']),
+                data['pseudonyme']
+            ))
+            conn.commit()
+            conn.close()
+
+            envoyer_email_confirmation(data['email'], data['pseudonyme'])
+            flash("Compte créé avec succès ! Veuillez confirmer votre e-mail.")
+            return redirect(url_for('connexion'))
+
+        except Exception as e:
+            flash(f"Erreur lors de la création du compte : {e}")
+            return redirect(url_for('creer_profil'))
+
     return render_template('creation.html')
+
 
 @app.route('/objet/<IDobjet>')
 def objet(IDobjet):
@@ -342,6 +400,8 @@ def modifier_objet(id):
                 data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
                 data['dernierReglage'], data['ConsommationL'], data['ConsommationW'], id))
             conn.commit()
+            update_user_points(pseudonyme, 0.25, 0)
+            increment_user_actions(pseudonyme)
             flash("Objet modifié avec succès.")
         except Exception as e:
             conn.rollback()
@@ -384,6 +444,8 @@ def supprimer_objet(id):
         # Supprimer l'objet
         cur.execute("DELETE FROM Objet WHERE ID = ?", (id,))
         conn.commit()
+        update_user_points(pseudonyme, 0.25, 0)
+        increment_user_actions(pseudonyme)
         flash("Objet supprimé et dissocié des salles.")
     except Exception as e:
         conn.rollback()
@@ -392,6 +454,123 @@ def supprimer_objet(id):
         conn.close()
 
     return redirect(url_for('gestion_ressources'))
+
+
+
+@app.route('/utilisateurs_public')
+def liste_utilisateurs_public():
+    conn = sql.connect("donnees.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nom, prenom, age, genre, email, dateNaissance, type, photo, fonction, service, niveau, pseudonyme, points 
+        FROM Informations
+    """)
+    users = cursor.fetchall()
+    conn.close()
+
+    return render_template('utilisateurs_public.html', users=users)
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    search_query = request.args.get('search-input')
+    service_filter = request.args.get('service-filter')
+    function_filter = request.args.get('fonction-filter')
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+
+    sql_query = "SELECT nom, prenom, fonction, service, pseudonyme FROM Informations WHERE 1=1"
+    params = []
+
+    if search_query:
+        sql_query += " AND (nom LIKE ? OR service LIKE ?)"
+        params.extend(['%' + search_query + '%'] * 2)
+    if service_filter:
+        sql_query += " AND service = ?"
+        params.append(service_filter)
+    if function_filter:
+        sql_query += " AND fonction = ?"
+        params.append(function_filter)
+
+    cur.execute(sql_query, params)
+    results = cur.fetchall()
+    con.close()
+
+    return render_template('resultats.html', results=results, query=search_query)
+
+# ROUTE DE RECHERCHE D'OBJETS
+@app.route('/search_objets', methods=['GET'])
+def search_objets():
+    search_query = request.args.get('search-input')
+    service_filter = request.args.get('service-filter')
+    type_filter = request.args.get('type-filter')
+    marque_filter = request.args.get('marque-filter')
+
+    con = sql.connect("donnees.db")
+    cur = con.cursor()
+
+    sql_query = "SELECT * FROM Objet WHERE 1=1"
+    params = []
+
+    if search_query:
+        sql_query += " AND (ID LIKE ? OR nom LIKE ?)"
+        params.extend(['%' + search_query + '%'] * 2)
+    if service_filter:
+        sql_query += " AND service = ?"
+        params.append(service_filter)
+    if type_filter:
+        sql_query += " AND type = ?"
+        params.append(type_filter)
+    if marque_filter:
+        sql_query += " AND marque = ?"
+        params.append(marque_filter)
+
+    cur.execute(sql_query, params)
+    results = cur.fetchall()
+    con.close()
+
+    # Mise à jour des points uniquement si résultat non vide et utilisateur connecté
+    if 'username' in session and results:
+        pseudonyme = session['username']
+        update_user_points(pseudonyme, 1, 1)
+
+    return render_template('resultats-objets.html', results=results, query=search_query)
+
+@app.route('/supprimer_utilisateur/<string:pseudonyme>', methods=['POST'])
+def supprimer_utilisateur(pseudonyme):
+    if 'username' not in session:
+        flash("Connexion requise.")
+        return redirect(url_for('connexion'))
+
+    user_type = get_user_type(session['username'])
+    if not user_type or int(user_type[0]) < 3:
+        flash("Seuls les administrateurs peuvent supprimer des utilisateurs.")
+        return redirect(url_for('liste_utilisateurs'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM Informations WHERE pseudonyme = ?", (pseudonyme,))
+        cur.execute("DELETE FROM Connexion WHERE pseudonyme = ?", (pseudonyme,))
+        conn.commit()
+        flash("Utilisateur supprimé avec succès.")
+    except Exception as e:
+        flash(f"Erreur lors de la suppression : {e}")
+    finally:
+        conn.close()
+
+    return redirect(url_for('liste_utilisateurs'))
+
+
+@app.context_processor
+def inject_user_type():
+    def get_user_type_safe(pseudo):
+        result = get_user_type(pseudo)
+        return int(result[0]) if result else 0
+    return dict(get_user_type=get_user_type_safe)
+
+
 
 
 if __name__ == '__main__':

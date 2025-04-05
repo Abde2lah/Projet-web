@@ -6,12 +6,12 @@
     <title>Liste des utilisateurs</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+
 </head>
 <body>
     <div class="navbar">
         <a href="{{ url_for('accueil')}}">Accueil</a>
     </div>
-
     <div class="container mt-5">
         <h2 class="text-center">Liste des utilisateurs</h2>
         <table class="table table-bordered table-striped">
@@ -19,41 +19,29 @@
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
-                    <th>Âge</th>
                     <th>Genre</th>
                     <th>Email</th>
-                    <th>Date de naissance</th>
-                    <th>Type</th>
                     <th>Photo</th>
                     <th>Fonction</th>
                     <th>Service</th>
                     <th>Niveau</th>
                     <th>Pseudonyme</th>
                     <th>Points</th>
-                    <th>Actions</th>
-                    <th>Connexions</th>
-                    <th>Profil</th>
-                    {% if session['username'] and get_user_type(session['username'])|int >= 3 %}
-                    <th>Supprimer</th>
-                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user[0] }}</td>
-                    <td>{{ user[1] }}</td>
-                    <td>{{ user[2] }}</td>
-                    <td>{{ user[3] }}</td>
-                    <td>{{ user[4] }}</td>
-                    <td>{{ user[5] }}</td>
-                    <td>{{ user[6] }}</td>
+                    <td>{{ user[0] }}</td> <!-- Nom -->
+                    <td>{{ user[1] }}</td> <!-- Prénom -->
+                    <td>{{ user[3] }}</td> <!-- Genre -->
+                    <td>{{ user[4] }}</td> <!-- Email -->
                     <td>
                         <img src="{{ user[7] if user[7] else url_for('static', filename='images/default.png') }}" 
-                            alt="Photo de profil" class="img-fluid" style="max-width: 50px; border-radius: 8px;">
+                        alt="Photo de profil" class="img-fluid" style="max-width: 50px; border-radius: 8px;">
                     </td>
-                    <td>{{ user[8] }}</td>
-                    <td>{{ user[9] }}</td>
+                    <td>{{ user[8] }}</td> <!-- Fonction -->
+                    <td>{{ user[9] }}</td> <!-- Service -->
                     <td>
                         {% if user[10] == 0 %}
                             Débutant
@@ -66,31 +54,15 @@
                         {% else %}
                             Inconnu
                         {% endif %}
-                    </td>
-                    <td><strong>{{ user[11] }}</strong></td>
-                    <td>{{ user[12] }}</td>
-                    <td>{{ user[13] }}</td>
-                    <td>{{ user[14] }}</td>
-                    <td>
-                        <a href="{{ url_for('profil', pseudonyme=user[11]) }}" class="btn btn-info btn-sm">Voir Profil</a>
-                    </td>
-                    {% if session['username'] and get_user_type(session['username'])|int >= 3 %}
-                    <td>
-                        <form method="POST" action="{{ url_for('supprimer_utilisateur', pseudonyme=user[11]) }}" 
-                            onsubmit="return confirm('Confirmer la suppression de l’utilisateur ?');">
-                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                        </form>
-                        
-                    </td>
-                    {% endif %}
+                    </td> <!-- Niveau -->
+                    <td><strong>{{ user[11] }}</strong></td> <!-- Pseudonyme -->
+                    <td>{{ user[12] }}</td> <!-- Points -->
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">Se déconnecter</a>
+        <a href="{{ url_for('accueilPublic') }}" class="btn btn-danger">Accueil</a>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -88,6 +88,14 @@ Néanmoins, leur actions seront limités par leur degré d'adminitration :
 - les utilisateurs complexes peuvent ajouter des objets à la liste des objets pouvant être des microscopes, des outiles médicales etc...
 - les utilisateurs admins pourront eux tout faire, ajouter des objets, ajouter des salles, pouvoir les modifier, lier les objets aux salles selon un utilisateurs, accéder aux fiches rapport des objets.
 
+En fonction des actions faites, les utilisateurs gagnent des points ce qui leur fera accéder à des niveaux de maitrise : 
+- débutant
+- intermédiaire
+- expert
+- avancé 
+
+Les moyens de gagner des points sont par la connexion dans le site (0.5), la modification d'un objet et son ajout (0.25), l'ajout d'une salle et sa modification (0.25)
+
 ## 8. Sources
 
 
