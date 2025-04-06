@@ -70,7 +70,8 @@ La conception de ce site a été faite grâce à plusieurs bibliothèques :
 - `sqlite3` →  pour la gestion de la base de données
 - `bcrypt` → 
 - `os` → 
-- `werkzeug` → pour la gestion des photos de profil dans un dossier sécurié
+- `werkzeug` → pour la gestion des photos de profil dans un dossier sécurisé
+- `fpdf` →  pour la création d'un rapport PDF contenant toutes les statistiques du site
 
 Tous ces bibliothèques ont été importés gràce à la commande `pip install [nom de la bibliothèque]` sous Linux.
 Sous Windows, on utilisera la même commande.

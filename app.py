@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
@@ -6,6 +6,8 @@ from config import Config
 from models import *
 import os
 from werkzeug.utils import secure_filename
+from fpdf import FPDF
+import datetime
 
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -356,7 +358,7 @@ def creer_objet():
                       data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
                       data['dernierReglage'], data['ConsommationL'], data['ConsommationW'])
 
-        update_user_points(pseudonyme, 2, 0)
+        update_user_points(pseudonyme, 0.25, 0)
         increment_user_actions(pseudonyme)
 
         flash("Objet ajouté avec succès !")
@@ -373,7 +375,7 @@ def liste_utilisateurs():
     conn.close()
     return render_template("utilisateurs.html", users=users)
 
-@app.route('/modifier_objet/<int:id>', methods=['GET', 'POST'])
+@app.route('/modifier_objet/<string:id>', methods=['GET', 'POST'])
 def modifier_objet(id):
     if 'username' not in session:
         return redirect(url_for('connexion'))
@@ -416,7 +418,7 @@ def modifier_objet(id):
     conn.close()
     return render_template('modifier_objet.html', objet=objet)
 
-@app.route('/supprimer_objet/<id>', methods=['POST'])
+@app.route('/supprimer_objet/<string:id>', methods=['POST'])
 def supprimer_objet(id):
     if 'username' not in session:
         return redirect(url_for('connexion'))
@@ -570,6 +572,66 @@ def inject_user_type():
         return int(result[0]) if result else 0
     return dict(get_user_type=get_user_type_safe)
 
+
+@app.route('/rapport')
+def afficher_rapport():
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT SUM(ConsommationL), SUM(ConsommationW) FROM Objet")
+    conso_l, conso_w = cur.fetchone()
+
+    cur.execute("SELECT AVG(nbAcces) FROM Informations")
+    taux_connexion = cur.fetchone()[0]
+
+    cur.execute("SELECT service, COUNT(*) as count FROM Informations GROUP BY service ORDER BY count DESC LIMIT 5")
+    services = cur.fetchall()
+
+    conn.close()
+
+    return render_template('rapport.html',
+                           conso_l=conso_l or 0,
+                           conso_w=conso_w or 0,
+                           taux_connexion=taux_connexion or 0,
+                           services=services)
+
+@app.route('/rapport/pdf')
+def generer_pdf():
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT SUM(ConsommationL), SUM(ConsommationW) FROM Objet")
+    conso_l, conso_w = cur.fetchone()
+
+    cur.execute("SELECT AVG(nbAcces) FROM Informations")
+    taux_connexion = cur.fetchone()[0]
+
+    cur.execute("SELECT service, COUNT(*) as count FROM Informations GROUP BY service ORDER BY count DESC LIMIT 5")
+    services = cur.fetchall()
+
+    conn.close()
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=14)
+    pdf.cell(200, 10, txt="Rapport d'utilisation de la plateforme", ln=True, align='C')
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Date : {datetime.date.today()}", ln=True)
+
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Consommation totale en litres : {conso_l or 0:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Consommation totale en watts : {conso_w or 0:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Taux de connexion moyen : {taux_connexion or 0:.2f}", ln=True)
+
+    pdf.ln(10)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, txt="Services les plus utilisés :", ln=True)
+    pdf.set_font("Arial", size=12)
+    for service, count in services:
+        pdf.cell(200, 10, txt=f"- {service} : {count} utilisateur(s)", ln=True)
+
+    pdf.output("rapport_utilisation.pdf")
+    return send_file("rapport_utilisation.pdf", as_attachment=True)
 
 
 

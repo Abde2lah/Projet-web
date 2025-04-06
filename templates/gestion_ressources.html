@@ -13,6 +13,7 @@
         <div class="button-group">
             <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
             <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
+            <a href="{{ url_for('afficher_rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
         </div>
 
         <h2>Liste des Salles</h2>
@@ -46,6 +47,8 @@
             <p><strong>Mode :</strong> {{ objet[3] }}</p>
             <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
                 <button type="submit">🗑 Supprimer</button>
+                <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn btn-danger">Modifier un objet</a> 
+
             </form>
             
         </div>
