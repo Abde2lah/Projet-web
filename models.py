@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, current_app
 from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
@@ -22,15 +22,23 @@ def allowed_file(filename):
 
 def envoyer_email_confirmation(destinataire, nom_utilisateur):
     try:
+        print(f"Envoi d'email à {destinataire}")
         token = generer_token_confirmation(destinataire)
-        lien_confirmation = url_for('confirmer_compte', token=token, _external=True) # _external=True pour avoir l'URL complète
+        lien_confirmation = url_for('confirmer_compte', token=token, _external=True)
+        print(f"Lien de confirmation : {lien_confirmation}")
 
-        msg = Message('Confirmation de compte', sender='testgroupe3cytech@gmail.com', recipients=[destinataire])
-        msg.html = render_template('email_confirmation.html', nom_utilisateur=nom_utilisateur, lien_confirmation=lien_confirmation) # Utilise un template HTML
+        msg = Message('Confirmation de compte',
+                    sender=app.config['MAIL_USERNAME'],
+                    recipients=[destinataire])
+        msg.html = render_template('email_confirmation.html',
+                                nom_utilisateur=nom_utilisateur,
+                                lien_confirmation=lien_confirmation)
+
         mail.send(msg)
-        print("Email de confirmation envoyé !")
+        print("Email envoyé avec succès !")
     except Exception as e:
-        print(f"Erreur lors de l'envoi de l'email : {e}")
+        print(f"Erreur : {e}")
+
 
 
 def insert_user(nom, prenom, age, genre, email, dateNaissance, type_user, password, photo, fonction, service, pseudonyme):

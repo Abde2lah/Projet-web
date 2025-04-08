@@ -27,11 +27,15 @@
 }
 
 body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Hauteur de la fenêtre */
+    flex-direction: column;
     background-color: var(--clr-bg);
     color: var(--clr-text);
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
-    padding: 0;
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -200,3 +204,21 @@ footer {
 .btn.danger:hover {
     background-color: #a50000;
 }
+
+.resource-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.salles-column, .objets-column {
+    flex: 1 1 45%;
+    min-width: 300px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+

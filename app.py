@@ -94,7 +94,7 @@ def ajouter_salle():
             pseudonyme_form = request.form['pseudonyme']
 
             cur.execute("""
-                INSERT INTO Salle (NumeroSalle, Etage, Service, ID, pseudonyme)
+                INSERT INTO Salle (NumeroSalle, Etage, Service, ObjetID, pseudonyme)
                 VALUES (?, ?, ?, ?, ?)
             """, (numero, etage, service, objet_id_str, pseudonyme_form))
             conn.commit()
@@ -389,34 +389,56 @@ def modifier_objet(id):
 
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
+    cur.execute("SELECT * FROM Objet WHERE ID = ?", (id,))
+    objet = cur.fetchone()
+
+    if not objet:
+        conn.close()
+        flash("Objet non trouvé.")
+        return redirect(url_for('gestion_ressources'))
 
     if request.method == 'POST':
+        data = request.form
+        champs_requis = ['TempActuelle', 'tempcible', 'mode', 'connectivite', 'batterie',
+                         'service', 'marque', 'nom', 'type', 'dernierReglage']
+
+        # Vérification des champs manquants
+        champs_vides = [champ for champ in champs_requis if not data.get(champ)]
+        if champs_vides:
+            flash(f"Les champs suivants sont obligatoires : {', '.join(champs_vides)}")
+            conn.close()
+            return render_template('modifier_objet.html', objet=data)
+
         try:
-            data = request.form
             cur.execute("""
                 UPDATE Objet
-                SET TempActuelle=?, tempcible=?, mode=?, connectivite=?, batterie=?, service=?, marque=?, nom=?, type=?, dernierReglage=?, ConsommationL=?, ConsommationW=?
+                SET TempActuelle=?, tempcible=?, mode=?, connectivite=?, batterie=?, 
+                    service=?, marque=?, nom=?, type=?, dernierReglage=?, 
+                    ConsommationL=?, ConsommationW=?
                 WHERE ID=?
             """, (
                 data['TempActuelle'], data['tempcible'], data['mode'], data['connectivite'],
                 data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
-                data['dernierReglage'], data['ConsommationL'], data['ConsommationW'], id))
+                data['dernierReglage'], data.get('ConsommationL', 0), data.get('ConsommationW', 0), id
+            ))
             conn.commit()
             update_user_points(pseudonyme, 0.25, 0)
             increment_user_actions(pseudonyme)
             flash("Objet modifié avec succès.")
+            return redirect(url_for('gestion_ressources'))
+
         except Exception as e:
             conn.rollback()
             flash(f"Erreur lors de la modification : {e}")
+
         finally:
             conn.close()
 
-        return redirect(url_for('gestion_ressources'))
+    else:
+        conn.close()
+        return render_template('modifier_objet.html', objet=objet)
 
-    cur.execute("SELECT * FROM Objet WHERE ID = ?", (id,))
-    objet = cur.fetchone()
-    conn.close()
-    return render_template('modifier_objet.html', objet=objet)
+
 
 @app.route('/supprimer_objet/<string:id>', methods=['POST'])
 def supprimer_objet(id):
@@ -433,16 +455,6 @@ def supprimer_objet(id):
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
     try:
-        # Nettoyer les références dans Salle
-        cur.execute("SELECT NumeroSalle, ID FROM Salle")
-        salles = cur.fetchall()
-        for salle in salles:
-            ids = salle[1].split(',') if salle[1] else []
-            if id in ids:
-                ids.remove(id)
-                new_ids = ','.join(ids) if ids else None
-                cur.execute("UPDATE Salle SET ID = ? WHERE NumeroSalle = ?", (new_ids, salle[0]))
-
         # Supprimer l'objet
         cur.execute("DELETE FROM Objet WHERE ID = ?", (id,))
         conn.commit()
@@ -595,43 +607,92 @@ def afficher_rapport():
                            taux_connexion=taux_connexion or 0,
                            services=services)
 
+
 @app.route('/rapport/pdf')
 def generer_pdf():
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
 
+    # Statistiques de consommation
     cur.execute("SELECT SUM(ConsommationL), SUM(ConsommationW) FROM Objet")
     conso_l, conso_w = cur.fetchone()
 
+    # Taux de connexion
     cur.execute("SELECT AVG(nbAcces) FROM Informations")
     taux_connexion = cur.fetchone()[0]
 
-    cur.execute("SELECT service, COUNT(*) as count FROM Informations GROUP BY service ORDER BY count DESC LIMIT 5")
+    # Services les plus utilisés
+    cur.execute("SELECT service, COUNT(*) FROM Informations GROUP BY service ORDER BY COUNT(*) DESC LIMIT 5")
     services = cur.fetchall()
+
+    # Utilisateurs les plus connectés
+    cur.execute("SELECT nom, prenom, nbAcces FROM Informations ORDER BY nbAcces DESC LIMIT 5")
+    top_connexions = cur.fetchall()
+
+    # Utilisateurs avec le plus de points
+    cur.execute("SELECT nom, prenom, points FROM Informations ORDER BY points DESC LIMIT 5")
+    top_points = cur.fetchall()
 
     conn.close()
 
+    # Création du PDF
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=14)
-    pdf.cell(200, 10, txt="Rapport d'utilisation de la plateforme", ln=True, align='C')
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Date : {datetime.date.today()}", ln=True)
+    pdf.set_font("Arial", "B", 16)
+    pdf.set_text_color(40, 70, 100)
+    pdf.cell(0, 10, " Rapport d'utilisation de la plateforme", ln=True, align='C')
 
-    pdf.ln(10)
-    pdf.cell(200, 10, txt=f"Consommation totale en litres : {conso_l or 0:.2f}", ln=True)
-    pdf.cell(200, 10, txt=f"Consommation totale en watts : {conso_w or 0:.2f}", ln=True)
-    pdf.cell(200, 10, txt=f"Taux de connexion moyen : {taux_connexion or 0:.2f}", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, f"Date de génération : {datetime.date.today()}", ln=True)
 
-    pdf.ln(10)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, txt="Services les plus utilisés :", ln=True)
-    pdf.set_font("Arial", size=12)
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_fill_color(220, 235, 255)
+    pdf.cell(0, 10, " Consommation énergétique", ln=True, fill=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 10, f"Total en litres : {conso_l or 0:.2f} L", ln=True)
+    pdf.cell(0, 10, f"Total en watts : {conso_w or 0:.2f} W", ln=True)
+
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_fill_color(220, 235, 255)
+    pdf.cell(0, 10, " Taux de connexion moyen", ln=True, fill=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 10, f"{taux_connexion or 0:.2f} connexions par utilisateur", ln=True)
+
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_fill_color(220, 235, 255)
+    pdf.cell(0, 10, " Services les plus utilisés", ln=True, fill=True)
+    pdf.set_font("Arial", "", 12)
     for service, count in services:
-        pdf.cell(200, 10, txt=f"- {service} : {count} utilisateur(s)", ln=True)
+        pdf.cell(0, 10, f"- {service} : {count} utilisateur(s)", ln=True)
 
-    pdf.output("rapport_utilisation.pdf")
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_fill_color(220, 235, 255)
+    pdf.cell(0, 10, " Utilisateurs les plus connectés", ln=True, fill=True)
+    pdf.set_font("Arial", "", 12)
+    for nom, prenom, acces in top_connexions:
+        pdf.cell(0, 10, f"{prenom} {nom} : {acces} connexions", ln=True)
+
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_fill_color(220, 235, 255)
+    pdf.cell(0, 10, "Utilisateurs avec le plus de points", ln=True, fill=True)
+    pdf.set_font("Arial", "", 12)
+    for nom, prenom, points in top_points:
+        pdf.cell(0, 10, f"{prenom} {nom} : {points} points", ln=True)
+
+    pdf.ln(10)
+    pdf.set_font("Arial", "I", 10)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 10, "Généré automatiquement via le tableau de bord - Projet CYTECH", ln=True, align='C')
+
+    pdf.output("rapport_utilisation.pdf", "F")
     return send_file("rapport_utilisation.pdf", as_attachment=True)
+
 
 
 

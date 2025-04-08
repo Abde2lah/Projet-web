@@ -57,5 +57,4 @@ CREATE TABLE Salle (
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 
--- débrancher les malades
 

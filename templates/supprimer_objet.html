@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de suppression</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🗑 Confirmation de suppression</h1>
+        <p>Souhaitez-vous vraiment supprimer l'objet avec l'ID <strong>{{ id }}</strong> ?</p>
+
+        <form method="POST" action="{{ url_for('supprimer_objet', id=id) }}">
+            <button type="submit" class="btn danger">Oui, supprimer</button>
+            <a href="{{ url_for('gestion_ressources') }}" class="btn">Annuler</a>
+        </form>
+    </div>
+</body>
+</html>

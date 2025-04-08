@@ -1,140 +1,53 @@
-<!DOCTYPE html>
-<html lang="fr" data-theme="light">
-<head>
+<div class="container">
+    <h1>Gestion des Salles et Objets</h1>
     <meta charset="UTF-8">
-    <title>Gestion des ressources</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Gestion des Salles et Objets</h1>
-
-        <div class="button-group">
-            <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
-            <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
-            <a href="{{ url_for('afficher_rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
-        </div>
-
-        <h2>Liste des Salles</h2>
-
-        {% for salle in salles %}
-        <div class="card">
-            <h3>Salle {{ salle[0] }} – {{ salle[2] }}</h3>
-            <p><strong>Étage :</strong> {{ salle[1] }}</p>
-            <p><strong>Objet associé :</strong> {{ salle[3] }}</p>
-            <p><strong>Utilisateur :</strong> {{ salle[4] }}</p>
-
-            <form action="{{ url_for('supprimer_salle', NumeroSalle=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
-                <button class="btn danger" type="submit">🗑 Supprimer</button>
-            </form>
-            <a href="{{ url_for('modifier_salle', NumeroSalle=salle[0]) }}">
-                <button class="btn">✏️ Modifier</button>
-            </a>
-            
-        </div>
-        {% endfor %}
-
-        <h2>Liste des Objets</h2>
-
-        {% for objet in objets %}
-        <div class="card">
-            <h3>{{ objet[8] }} – {{ objet[9] }}</h3>
-            <p><strong>ID :</strong> {{ objet[0] }}</p>
-            <p><strong>Service :</strong> {{ objet[6] }}</p>
-            <p><strong>Température :</strong> {{ objet[1] }}°C → {{ objet[2] }}°C</p>
-            <p><strong>Marque :</strong> {{ objet[7] }}</p>
-            <p><strong>Mode :</strong> {{ objet[3] }}</p>
-            <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
-                <button type="submit">🗑 Supprimer</button>
-                <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn btn-danger">Modifier un objet</a> 
-
-            </form>
-            
-        </div>
-        {% endfor %}
-        <div class="recherche">
-            <form method="get" action="/search_objets">
-                <input type="search" name="search-input" placeholder="Rechercher des objets connectés par ID">
-                <select name="service-filter">
-                    <option value="">Tous les services</option>
-                    <option value="Urgences">Urgences</option>
-                    <option value="Pediatrie">Pédiatrie</option>
-                    <option value="Anesthesie">Anesthésie-Réanimation</option>
-                    <option value="Oncologie">Oncologie</option>
-                    <option value="Psychiatrie">Psychiatrie</option>
-                </select>
-                <br><br><br>
-                <label for="type-filter">Choisissez un dispositif :</label>
-                <select id="type-filter" name="type-filter">
-                    <option value=""> Tous les dispositifs</option>
-                    <option value="thermostat">Thermostat</option>
-                    <option value="ventilation">ventilation</option>
-                    <optgroup label="Imagerie">
-                        <option value="irm">IRM</option>
-                        <option value="radio">Radio</option>
-                        <option value="scanner">Scanner</option>
-                    </optgroup>
-    
-                    <optgroup label="Analyse">
-                        <option value="microscope">Microscope</option>
-                        <option value="refrigerateur">Réfrigérateur</option>
-                    </optgroup>
-    
-                    <optgroup label="Chirurgie">
-                        <option value="robot_chirurgical">Robot chirurgical</option>
-                    </optgroup>
-    
-                    <optgroup label="Réanimation">
-                        <option value="ventilation_artificielle">Ventilation artificielle</option>
-                        <option value="scope">Scope</option>
-                        <option value="pompe_nutritionnelle">Pompe nutritionnelle</option>
-                    </optgroup>
-    
-                    <optgroup label="Psychiatrie">
-                        <option value="robot_rtms">Robot RTMS</option>
-                    </optgroup>
-                </select>
-    
-                <br><br><br>
-                <label for="marque-filter">Choisissez une marque :</label>
-                <select id="marque-filter" name="marque-filter">
-                    <option value=""> Toutes les marques</option>
-                    <optgroup label="Imagerie médicale">
-                        <option value="philips">Philips Healthcare</option>
-                        <option value="siemens">Siemens Healthineers</option>
-                        <option value="ge">General Electric (GE) Healthcare</option>
-                        <option value="canon">Canon Medical Systems</option>
-                    </optgroup>
-    
-                    <optgroup label="Dispositifs de diagnostic">
-                        <option value="roche diagnostics">Roche Diagnostics</option>
-                        <option value="abbott">Abbott Laboratories</option>
-                        <option value="medtronic">Medtronic</option>
-                    </optgroup>
-    
-                    <optgroup label="Chirurgie">
-                        <option value="intuitive">Intuitive Surgical</option>
-                        <option value="jnj">Johnson & Johnson (Ethicon)</option>
-                        <option value="stryker">Stryker</option>
-                    </optgroup>
-    
-                    <optgroup label="Réanimation et soins intensifs">
-                        <option value="draeger">Draeger</option>
-                        <option value="baxter">Baxter International</option>
-                        <option value="resmed">ResMed</option>
-                    </optgroup>
-    
-                    <optgroup label="Autres domaines">
-                        <option value="3m">3M Health Care</option>
-                        <option value="bd">Becton Dickinson (BD)</option>
-                    </optgroup>
-                </select>
-                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
-            </form>
-        </div>
-        <a href="{{ url_for('accueil') }}" class="btn btn-danger">Accueil</a>
-
+    <div class="button-group">
+        <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
+        <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
+        <a href="{{ url_for('afficher_rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
     </div>
-</body>
-</html>
+
+    <div class="resource-flex">
+        <!-- COLONNE GAUCHE : SALLES -->
+        <div class="salles-column">
+            <h2>Liste des Salles</h2>
+            {% for salle in salles %}
+            <div class="card">
+                <h3>Salle {{ salle[0] }} – {{ salle[2] }}</h3>
+                <p><strong>Étage :</strong> {{ salle[1] }}</p>
+                <p><strong>Objet associé :</strong> {{ salle[3] }}</p>
+                <p><strong>Utilisateur :</strong> {{ salle[4] }}</p>
+
+                <form action="{{ url_for('supprimer_salle', NumeroSalle=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
+                    <button class="btn danger" type="submit">🗑 Supprimer</button>
+                </form>
+                <a href="{{ url_for('modifier_salle', NumeroSalle=salle[0]) }}">
+                    <button class="btn">✏️ Modifier</button>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- COLONNE DROITE : OBJETS -->
+        <div class="objets-column">
+            <h2>Liste des Objets</h2>
+            {% for objet in objets %}
+            <div class="card">
+                <h3>{{ objet[8] }} – {{ objet[9] }}</h3>
+                <p><strong>ID :</strong> {{ objet[0] }}</p>
+                <p><strong>Service :</strong> {{ objet[6] }}</p>
+                <p><strong>Température :</strong> {{ objet[1] }}°C → {{ objet[2] }}°C</p>
+                <p><strong>Marque :</strong> {{ objet[7] }}</p>
+                <p><strong>Mode :</strong> {{ objet[3] }}</p>
+                <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
+                    <button type="submit" class="btn danger">🗑 Supprimer</button>
+                    <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn">✏️ Modifier</a>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <a href="{{ url_for('accueil') }}" class="btn btn-danger">Accueil</a>
+</div>

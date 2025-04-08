@@ -39,6 +39,7 @@ Le projet est constitué de :
 - `static/` → dossier contenant le fichier styles.css pour le rendu des pages html et les images de photo de profil.
 - `config.py` → configuration Flask (clé secrète, email)
 - `migrate.py`→ fichier python permettant de manipuler certaines parties de la base de données, insérer des tables ou des colonnes
+- `donnees.db` → fichier qui contiendra la base de données ainsi que les tables qui géront le système du site web   
 - `test.txt` → fichier servant à stocker les fonctions lors du nettoyage du code
 - `README.md` → ce fichier
 
