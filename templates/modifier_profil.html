@@ -63,7 +63,7 @@
             <!-- Photo actuelle -->
             <label><i class="fas fa-image"></i> Photo de profil actuelle :</label>
             <img src="{{ url_for('static', filename='images/' + user[8]) if user[8] else url_for('static', filename='images/default.png') }}" 
-                 alt="Photo de profil" width="150" height="150">
+                alt="Photo de profil" width="150" height="150">
 
             <!-- Nouvelle photo -->
             <label><i class="fas fa-upload"></i> Télécharger une nouvelle photo (facultatif) :</label>
@@ -74,7 +74,7 @@
         </form>
 
         <br>
-        <a href="{{ url_for('profile') }}"><i class="fas fa-save"></i> Retour au profil</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-save"></i>Retour au Profil</a>
     </div>
 </body>
 </html>

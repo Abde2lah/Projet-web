@@ -48,6 +48,56 @@
             {% endfor %}
         </div>
     </div>
+    <div class="recherche">
+        <form method="get" action="/search_objets">
+            <input type="search" name="search-input" placeholder="Rechercher un objet (nom ou ID)" value="{{ request.args.get('search-input', '') }}">
+    
+            <!-- Filtre par service -->
+            <select name="service-filter">
+                <option value="">Tous les services</option>
+                <option value="Urgences" >Urgences</option>
+                <option value="Pediatrie" >Pédiatrie</option>
+                <option value="Anesthesie">Anesthésie-Réanimation</option>
+                <option value="Oncologie" >Oncologie</option>
+                <option value="Psychiatrie" >Psychiatrie</option>
+            </select>
+    
+            <!-- Filtre par type -->
+            <select name="type-filter">
+                <option value="">Tous les types</option>
+                <option value="thermostat">Thermostat</option>
+                <option value="irm" >IRM</option>
+                <option value="scanner" >Scanner</option>
+                <option value="radio" >Radio</option>
+                <option value="robot_chirurgical" >Robot chirurgical</option>
+                <option value="Microscope" >Microscope</option>
+                <option value="Réfrigérateur" >Réfrigérateur</option>
+                <option value="robot_chirurgical" >Robot chirurgical</option>
+                <option value="Ventilation Artificielle" >Ventilation Artificielle</option>
+                <option value="Pompe Nutritionnelle" >Pompe Nutritionnelle</option>
+                <option value="Roboitt RTMS" >Robot RTMS</option>
+            </select>
+    
+            <!-- Filtre par marque -->
+            <select name="marque-filter">
+                <option value="">Toutes les marques</option>
+                <option value="philips" >Philips</option>
+                <option value="siemens" >Siemens</option>
+                <option value="ge">GE Healthcare</option>
+                <option value="canon">Canon</option>
+                <option value="resmed" >ResMed</option>
+                <option value="Intuitive Surgical" >Intuitive Surgical</option>
+                <option value="Johnson and Johnson" >Johnson and Johnson</option>
+                <option value="Baxter International" >Baxter International</option>
+                <option value="Draeger" >Draeger</option>
+                <option value="Stryker" >Stryker</option>
+                <option value="Abott Laboratories" >Abott Laboratories</option>
+            </select>
+    
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
+        </form>
+    </div>
+    
 
     <a href="{{ url_for('accueil') }}" class="btn btn-danger">Accueil</a>
 </div>

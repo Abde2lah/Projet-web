@@ -486,23 +486,26 @@ def liste_utilisateurs_public():
 
 
 @app.route('/search', methods=['GET'])
-def search():
+def search(): #recherche de l'accueil avec filtres
+
     search_query = request.args.get('search-input')
-    service_filter = request.args.get('service-filter')
-    function_filter = request.args.get('fonction-filter')
+    service_filter = request.args.get('service-filter')  #filtre de service
+    function_filter = request.args.get('fonction-filter') # filtre de fonction
 
     con = sql.connect("donnees.db")
     cur = con.cursor()
 
     sql_query = "SELECT nom, prenom, fonction, service, pseudonyme FROM Informations WHERE 1=1"
+
     params = []
 
     if search_query:
         sql_query += " AND (nom LIKE ? OR service LIKE ?)"
-        params.extend(['%' + search_query + '%'] * 2)
+        params.extend(['%' + search_query + '%', '%' + search_query + '%'])
     if service_filter:
         sql_query += " AND service = ?"
         params.append(service_filter)
+
     if function_filter:
         sql_query += " AND fonction = ?"
         params.append(function_filter)
@@ -512,6 +515,7 @@ def search():
     con.close()
 
     return render_template('resultats.html', results=results, query=search_query)
+
 
 # ROUTE DE RECHERCHE D'OBJETS
 @app.route('/search_objets', methods=['GET'])
