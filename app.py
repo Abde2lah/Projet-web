@@ -57,7 +57,7 @@ def gestion_ressources():
     if 'username' not in session:
         flash("Veuillez vous connecter.")
         return redirect(url_for('connexion'))
-   
+    
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
     cur.execute("SELECT * FROM Salle")
@@ -248,8 +248,8 @@ def creer_profil():
 
         # Vérification de tous les champs requis
         champs_obligatoires = ['nom', 'prenom', 'age', 'genre', 'email', 'dateNaissance',
-                               'type', 'mot_de_passe', 'fonction', 'service', 'pseudonyme',
-                               'niveau', 'points', 'nbAction']
+                            'type', 'mot_de_passe', 'fonction', 'service', 'pseudonyme',
+                            'niveau', 'points', 'nbAction']
 
         for champ in champs_obligatoires:
             if not data.get(champ):
@@ -355,8 +355,8 @@ def creer_objet():
     if request.method == 'POST':
         data = request.form
         insert_object(data['ID'], data['tempActuelle'], data['tempCible'], data['mode'], data['connectivite'],
-                      data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
-                      data['dernierReglage'], data['ConsommationL'], data['ConsommationW'])
+                    data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
+                    data['dernierReglage'], data['ConsommationL'], data['ConsommationW'])
 
         update_user_points(pseudonyme, 0.25, 0)
         increment_user_actions(pseudonyme)
@@ -400,7 +400,7 @@ def modifier_objet(id):
     if request.method == 'POST':
         data = request.form
         champs_requis = ['TempActuelle', 'tempcible', 'mode', 'connectivite', 'batterie',
-                         'service', 'marque', 'nom', 'type', 'dernierReglage']
+                        'service', 'marque', 'nom', 'type', 'dernierReglage']
 
         # Vérification des champs manquants
         champs_vides = [champ for champ in champs_requis if not data.get(champ)]
@@ -602,10 +602,10 @@ def afficher_rapport():
     conn.close()
 
     return render_template('rapport.html',
-                           conso_l=conso_l or 0,
-                           conso_w=conso_w or 0,
-                           taux_connexion=taux_connexion or 0,
-                           services=services)
+                        conso_l=conso_l or 0,
+                        conso_w=conso_w or 0,
+                        taux_connexion=taux_connexion or 0,
+                        services=services)
 
 
 @app.route('/rapport/pdf')
@@ -692,8 +692,6 @@ def generer_pdf():
 
     pdf.output("rapport_utilisation.pdf", "F")
     return send_file("rapport_utilisation.pdf", as_attachment=True)
-
-
 
 
 if __name__ == '__main__':
