@@ -500,7 +500,7 @@ def search(): #recherche de l'accueil avec filtres
     params = []
 
     if search_query:
-        sql_query += " AND (nom LIKE ? OR service LIKE ?)"
+        sql_query += " AND (nom LIKE ? OR prenom LIKE ?)"
         params.extend(['%' + search_query + '%', '%' + search_query + '%'])
     if service_filter:
         sql_query += " AND service = ?"
@@ -610,6 +610,72 @@ def afficher_rapport():
                         conso_w=conso_w or 0,
                         taux_connexion=taux_connexion or 0,
                         services=services)
+
+
+@app.route('/visualiser_objet/<string:id>', methods=['GET'])
+def visualiser_objet(id):
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)
+
+    if not user_type or int(user_type[0]) < 2:
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for('gestion_ressources'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Objet WHERE ID = ?", (id,))
+    objet = cur.fetchone()
+
+    if not objet:
+        conn.close()
+        flash("Objet non trouvé.")
+        return redirect(url_for('gestion_ressources'))
+
+    if request.method == 'POST':
+        data = request.form
+        champs_requis = ['TempActuelle', 'tempcible', 'mode', 'connectivite', 'batterie',
+                        'service', 'marque', 'nom', 'type', 'dernierReglage']
+
+        # Vérification des champs manquants
+        champs_vides = [champ for champ in champs_requis if not data.get(champ)]
+        if champs_vides:
+            flash(f"Les champs suivants sont obligatoires : {', '.join(champs_vides)}")
+            conn.close()
+            return render_template('modifier_objet.html', objet=data)
+
+        try:
+            cur.execute("""
+                UPDATE Objet
+                SET TempActuelle=?, tempcible=?, mode=?, connectivite=?, batterie=?, 
+                    service=?, marque=?, nom=?, type=?, dernierReglage=?, 
+                    ConsommationL=?, ConsommationW=?
+                WHERE ID=?
+            """, (
+                data['TempActuelle'], data['tempcible'], data['mode'], data['connectivite'],
+                data['batterie'], data['service'], data['marque'], data['nom'], data['type'],
+                data['dernierReglage'], data.get('ConsommationL', 0), data.get('ConsommationW', 0), id
+            ))
+            conn.commit()
+            update_user_points(pseudonyme, 0.25, 0)
+            increment_user_actions(pseudonyme)
+            flash("Objet modifié avec succès.")
+            return redirect(url_for('gestion_ressources'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Erreur lors de la modification : {e}")
+
+        finally:
+            conn.close()
+
+    else:
+        conn.close()
+        return render_template('visualiser_objet.html', objet=objet)
+
+
 
 
 @app.route('/rapport/pdf')

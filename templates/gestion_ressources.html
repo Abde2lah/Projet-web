@@ -43,6 +43,7 @@
                 <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
                     <button type="submit" class="btn danger">🗑 Supprimer</button>
                     <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn">✏️ Modifier</a>
+                    <a href="{{ url_for('visualiser_objet', id=objet[0]) }}" class="btn">👁️ Visualiser</a>
                 </form>
             </div>
             {% endfor %}
