@@ -69,8 +69,8 @@ La conception de ce site a été faite grâce à plusieurs bibliothèques :
 - `flask` → pour la gestion des routes et le rendu 
 - `flask_mail` → pour la confirmation de l'inscrption par mail.
 - `sqlite3` →  pour la gestion de la base de données
-- `bcrypt` → 
-- `os` → 
+- `bcrypt` → pour la hashage du mot de passe dans la bade de données
+- `os` → pour les fonctionnalités dépendantes du systeme d'exploitation
 - `werkzeug` → pour la gestion des photos de profil dans un dossier sécurisé
 - `fpdf` →  pour la création d'un rapport PDF contenant toutes les statistiques du site
 
