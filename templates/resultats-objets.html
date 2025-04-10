@@ -7,6 +7,9 @@
 </head>
 <body>
     <div class="container">
+        <a href="{{ url_for('accueil') }}" class="btn btn-danger">Accueil</a>
+    </div>
+    <div class="container">
         <h2>Objets correspondant à : "{{ query }}"</h2>
 
         {% if results %}
@@ -23,11 +26,11 @@
             <tbody>
                 {% for obj in results %}
                 <tr>
-                    <td><a href="{{ url_for('objet', IDobjet=obj[0]) }}">{{ obj[0] }}</a></td>
-                    <td>{{ obj[8] }}</td>
-                    <td>{{ obj[9] }}</td>
-                    <td>{{ obj[6] }}</td>
-                    <td>{{ obj[7] }}</td>
+                    <td data-label="ID"><a href="{{ url_for('objet', IDobjet=obj[0]) }}">{{ obj[0] }}</a></td>
+                    <td data-label="Nom">{{ obj[8] }}</td>
+                    <td data-label="Type">{{ obj[9] }}</td>
+                    <td data-label="Service">{{ obj[6] }}</td>
+                    <td data-label="Marque">{{ obj[7] }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -36,7 +39,10 @@
         <p>Aucun objet trouvé.</p>
         {% endif %}
 
-        <a href="{{ url_for('gestion_ressources') }}" class="btn btn-secondary">Retourner aux ressources</a>
+
+        <div class="container">
+            <a href="{{ url_for('gestion_ressources') }}" class="btn btn-secondary">Retourner aux ressources</a>
+        </div>
     </div>
 </body>
 </html>

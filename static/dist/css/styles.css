@@ -222,3 +222,159 @@ footer {
 }
 
 
+
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 20px auto;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .resource-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .salles-column, .objets-column {
+        flex: 1 1 100%;
+        min-width: unset;
+    }
+
+    .texte-bienvenue {
+        font-size: 1.2rem;
+        text-align: center;
+        padding: 0 10px;
+    }
+
+    .texte-intro, .infos, .actu {
+        padding: 0 10px;
+        font-size: 0.95rem;
+        text-align: justify;
+    }
+
+    .map iframe,
+    .actu img {
+        width: 100%;
+        height: auto;
+    }
+
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .btn, button {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    footer {
+        font-size: 0.85rem;
+    }
+}
+
+
+
+
+
+.bouton {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.texte-bienvenue {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--clr-accent);
+    text-align: center;
+}
+
+.texte-intro {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+}
+
+.infos, .actu {
+    max-width: 800px;
+    margin: auto;
+    text-align: left;
+}
+
+.map {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 30px auto;
+}
+
+
+.btn-secondary{
+    padding: 10px;
+}
+
+
+
+
+
+
+
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    thead {
+        display: none; /* Cacher les en-têtes sur petit écran */
+    }
+
+    tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--clr-border);
+        border-radius: 8px;
+        padding: 10px;
+        background-color: var(--clr-card);
+    }
+
+    tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border: none;
+        border-bottom: 1px solid var(--clr-border);
+        font-size: 0.95rem;
+    }
+
+    tbody td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: var(--clr-accent);
+    }
+
+    tbody td:last-child {
+        border-bottom: none;
+    }
+}
