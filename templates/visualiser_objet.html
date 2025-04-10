@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualiser l’objet {{ objet[0] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Visualiser l'objet n°{{ objet[0] }}</h1>
+            <label>Nom : {{ objet[8] }}</label>
+            <label>Marque : {{ objet[7] }}</label>
+            <label>Type : {{ objet[9] }}</label>
+            <label>Service : {{ objet[6] }}</label>
+            <label>Mode : {{ objet[3] }}</label>
+            <label>Connectivité : {{ objet[4] }}</label>
+            <label>Batterie : {{ objet[5] }}%</label>
+            <label>Température actuelle : {{ objet[1] }}°C</label>
+            <label>Température cible : {{ objet[2] }}°C</label>
+            <label>Dernier réglage : {{ objet[10] }}</label>
+            <label>Consommation (L) : {{ objet[11] }} L</label>
+            <label>Consommation (W) : {{ objet[12] }} W</label>
+            <label>État : {{ objet[13] }}</label>
+            <label>État de la batterie : {{ objet[14] }}</label>
+            <label>État de la connectivité : {{ objet[15] }}</label>
+            <label>État de la température : {{ objet[16] }}</label>
+            <label>État de l'objet : {{ objet[17] }}</label>
+    </div>
+    <div>
+        <a href="{{ url_for('gestion_ressources') }}" class="btn btn-danger mt-3">Retour à la gestion des ressources</a>
+    </div>
+</body>
+</html>
