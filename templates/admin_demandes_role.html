@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Demandes de Rôle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+</head>
+<body>
+    <h1>👑 Demandes de Promotion de Rôle</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if demandes %}
+    <table>
+        <thead>
+            <tr>
+                <th>Pseudonyme</th>
+                <th>Message</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for demande in demandes %}
+            <tr>
+                <td>{{ demande[1] }}</td>
+                <td>{{ demande[2] or 'Aucun message' }}</td>
+                <td>{{ demande[3] }}</td>
+                <td>{{ demande[4] }}</td>
+                <td>
+                    {% if demande[3] == 'en attente' %}
+                        <a href="{{ url_for('valider_role', id=demande[0]) }}">✅ Valider</a> |
+                        <a href="{{ url_for('refuser_role', id=demande[0]) }}">❌ Refuser</a>
+                    {% else %}
+                        (traitée)
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Aucune demande de rôle pour le moment.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}">⬅ Retour au tableau de bord</a>
+</body>
+</html>

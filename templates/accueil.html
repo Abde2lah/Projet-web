@@ -30,6 +30,9 @@
         {% else %}
         <a href="{{ url_for('gestion_ressources') }}"><button>Accès ressources</button></a>
         {% endif %}
+        {% if session['username'] and session['type'] == 3 %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-danger">📋 Tableau de bord Admin</a>
+        {% endif %}
     </div>
     
     <!-- Texte d'accueil -->

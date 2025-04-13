@@ -25,6 +25,10 @@ app.config.from_object(Config)
 app.secret_key = 'your_secret_key'
 mail = Mail(app)
 
+def est_admin():
+    return 'username' in session and get_user_type(session['username'])[0] == 3
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 

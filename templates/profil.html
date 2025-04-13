@@ -57,6 +57,12 @@
         <a href="{{ url_for('logout') }}" class="btn btn-danger">Se déconnecter</a>
         <a href="{{ url_for('liste_utilisateurs') }}" class="btn btn-primary">Voir les autres profils</a>
     </div>
+    {% if session['type'] != 3 %}
+    <form method="POST" action="{{ url_for('demande_role') }}">
+        <input type="hidden" name="message" value="Je souhaite devenir administrateur.">
+        <button class="btn btn-outline-primary mt-3" type="submit">👑 Demander un rôle Admin</button>
+    </form>
+    {% endif %}
 
     <!-- Lien vers Bootstrap JS (facultatif si besoin de JavaScript) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

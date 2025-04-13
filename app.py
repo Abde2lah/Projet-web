@@ -841,6 +841,212 @@ def generer_pdf():
     return send_file(filename, as_attachment=True)
 
 
+@app.route('/objet/<id>/demande_suppression', methods=['POST'])
+def demande_suppression_objet(id):
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    message = request.form.get('message', '')
+    pseudonyme = session['username']
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Vérifie si une demande est déjà en attente
+    cur.execute("SELECT COUNT(*) FROM DemandeSuppression WHERE objet_id=? AND statut='en attente'", (id,))
+    if cur.fetchone()[0] > 0:
+        flash("❗ Une demande est déjà en cours pour cet objet.")
+    else:
+        cur.execute("""
+            INSERT INTO DemandeSuppression (objet_id, pseudonyme, message)
+            VALUES (?, ?, ?)
+        """, (id, pseudonyme, message))
+        conn.commit()
+        flash("✅ Demande de suppression envoyée.")
+
+    conn.close()
+    return redirect(url_for('gestion_ressources'))
+
+
+@app.route('/admin/demandes')
+def voir_demandes():
+    if not est_admin():
+        flash("Accès réservé à l’administrateur.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT d.id, o.nom, d.pseudonyme, d.message, d.statut, d.date_creation
+        FROM DemandeSuppression d
+        JOIN Objet o ON d.objet_id = o.ID
+        ORDER BY d.date_creation DESC
+    """)
+    demandes = cur.fetchall()
+    conn.close()
+
+    return render_template("admin_demandes.html", demandes=demandes)
+
+
+@app.route('/admin/demande/<int:id>/valider')
+def valider_demande(id):
+    if not est_admin():
+        flash("Accès réservé à l’administrateur.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT objet_id FROM DemandeSuppression WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        objet_id = row[0]
+        cur.execute("DELETE FROM Objet WHERE ID = ?", (objet_id,))
+        cur.execute("UPDATE DemandeSuppression SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash("✅ Objet supprimé et demande validée.")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('voir_demandes'))
+
+
+@app.route('/admin/demande/<int:id>/refuser')
+def refuser_demande(id):
+    if not est_admin():
+        flash("Accès réservé à l’administrateur.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeSuppression SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('voir_demandes'))
+
+
+@app.route('/demande_role', methods=['POST'])
+def demande_role():
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    message = request.form.get('message')
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM DemandeRole WHERE pseudonyme=? AND statut='en attente'", (pseudonyme,))
+    if cur.fetchone()[0] > 0:
+        flash("❗ Une demande est déjà en attente.")
+    else:
+        cur.execute("INSERT INTO DemandeRole (pseudonyme, message) VALUES (?, ?)", (pseudonyme, message))
+        conn.commit()
+        flash("✅ Demande envoyée avec succès. En attente de validation.")
+
+    conn.close()
+    return redirect(url_for('accueil'))
+
+
+
+@app.route('/admin/demandes_role')
+def voir_demandes_role():
+    if not est_admin():
+        flash("Accès réservé à l'administrateur.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT id, pseudonyme, message, statut, date_creation FROM DemandeRole ORDER BY date_creation DESC")
+    demandes = cur.fetchall()
+    conn.close()
+
+    return render_template("admin_demandes_role.html", demandes=demandes)
+
+
+
+@app.route('/admin/demande_role/<int:id>/valider')
+def valider_role(id):
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT pseudonyme FROM DemandeRole WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        pseudo = row[0]
+        cur.execute("UPDATE Connexion SET type = 3 WHERE pseudonyme = ?", (pseudo,))
+        cur.execute("UPDATE DemandeRole SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash(f"🎉 {pseudo} est désormais administrateur !")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('voir_demandes_role'))
+
+
+@app.route('/admin/demande_role/<int:id>/refuser')
+def refuser_role(id):
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeRole SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('voir_demandes_role'))
+
+
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Comptes
+    cur.execute("SELECT COUNT(*) FROM DemandeSuppression WHERE statut='en attente'")
+    nb_supp = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM DemandeRole WHERE statut='en attente'")
+    nb_roles = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT d.id, o.nom, d.pseudonyme, d.message, d.statut, d.date_creation
+        FROM DemandeSuppression d
+        JOIN Objet o ON d.objet_id = o.ID
+        ORDER BY d.date_creation DESC
+    """)
+    demandes_suppression = cur.fetchall()
+
+    cur.execute("SELECT id, pseudonyme, message, statut, date_creation FROM DemandeRole ORDER BY date_creation DESC")
+    demandes_roles = cur.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        nb_supp=nb_supp,
+        nb_roles=nb_roles,
+        demandes_suppression=demandes_suppression,
+        demandes_roles=demandes_roles
+    )
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1')

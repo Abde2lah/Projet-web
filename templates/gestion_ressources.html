@@ -6,6 +6,15 @@
         <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
         <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
         <a href="{{ url_for('rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
+    
+        {% if get_user_type(session['username']) == 3 %}
+        <a href="{{ url_for('admin_dashboard') }}">
+            <button class="btn btn-dark">🛠️ Accès au tableau de bord admin</button>
+        </a>
+        {% endif %}
+    </div>
+    
+    
     </div>
 
     <div class="resource-flex">
@@ -51,6 +60,11 @@
                     <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn">✏️ Modifier</a>
                     <a href="{{ url_for('visualiser_objet', id=objet[0]) }}" class="btn">👁️ Visualiser</a>
                 </form>
+                <form method="POST" action="{{ url_for('demande_suppression_objet', id=objet[0]) }}" onsubmit="return confirm('Souhaitez-vous vraiment demander la suppression de cet objet ?');">
+                    <input type="hidden" name="message" value="Demande de suppression par l'utilisateur.">
+                    <button class="btn btn-warning" type="submit">🛑 Demander la suppression</button>
+                </form>
+                
             </div>
             {% endfor %}
         </div>

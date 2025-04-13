@@ -19,7 +19,6 @@ def add_nbAcces_column():
 
 add_nbAcces_column()
 
-import sqlite3
 
 # Fonction pour vérifier si la table existe déjà
 def table_exists(cursor, table_name):
@@ -124,7 +123,6 @@ def create_tables():
     print("Table SalleObjet créée (ou existante).")
 
 
-import sqlite3
 
 def create_demande_suppression_table():
     conn = sqlite3.connect("donnees.db")
@@ -147,8 +145,30 @@ def create_demande_suppression_table():
     conn.close()
     print("Table 'DemandeSuppression' créée avec succès.")
 
+
+def create_demande_role_table():
+    conn = sqlite3.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeRole (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pseudonyme VARCHAR(50),
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Table 'DemandeRole' créée avec succès.")
+
 if __name__ == "__main__":
-    create_demande_suppression_table()
+    create_demande_role_table()
+
+
 
 
 
