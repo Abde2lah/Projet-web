@@ -7,6 +7,8 @@ from models import *
 import os
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer
+import matplotlib
+matplotlib.use('Agg')  # backend pour serveur sans interface graphique
 import matplotlib.pyplot as plt
 import io
 import base64

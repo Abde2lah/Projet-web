@@ -75,8 +75,8 @@ La conception de ce site a été faite grâce à plusieurs bibliothèques :
 - `fpdf` →  pour la création d'un rapport PDF contenant toutes les statistiques du site
 - `datetime` →  pour avoir accès au temps du système
 - `matplotlib` → pour tracer des diagrammes
-- `io` →
-- `base64` →
+- `io` → Pour gérer les entrées et sorties
+- `base64` → pour l'encodement des données dans les diagrammes
 
 Tous ces bibliothèques ont été importés gràce à la commande `pip install [nom de la bibliothèque]` sous Linux.
 Sous Windows, on utilisera la même commande.

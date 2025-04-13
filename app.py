@@ -2,7 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
+import matplotlib
+matplotlib.use('Agg')  # backend pour serveur sans interface graphique
 import matplotlib.pyplot as plt
+
 import io 
 from config import Config
 from models import *
@@ -617,26 +620,63 @@ def inject_user_type():
 
 
 @app.route('/rapport')
-def afficher_rapport():
+def rapport():
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
 
+    # Données brutes
     cur.execute("SELECT SUM(ConsommationL), SUM(ConsommationW) FROM Objet")
     conso_l, conso_w = cur.fetchone()
 
     cur.execute("SELECT AVG(nbAcces) FROM Informations")
     taux_connexion = cur.fetchone()[0]
 
-    cur.execute("SELECT service, COUNT(*) as count FROM Informations GROUP BY service ORDER BY count DESC LIMIT 5")
+    cur.execute("SELECT service, COUNT(*) FROM Informations GROUP BY service ORDER BY COUNT(*) DESC LIMIT 5")
     services = cur.fetchall()
+
+    cur.execute("SELECT nom, prenom, nbAcces FROM Informations")
+    connexions = cur.fetchall()
+
+    cur.execute("SELECT nom, prenom, nbAction FROM Informations")
+    actions = cur.fetchall()
 
     conn.close()
 
-    return render_template('rapport.html',
-                        conso_l=conso_l or 0,
-                        conso_w=conso_w or 0,
-                        taux_connexion=taux_connexion or 0,
-                        services=services)
+    # 🎨 Diagramme camembert des connexions
+    fig1, ax1 = plt.subplots()
+    labels1 = [f"{prenom} {nom}" for nom, prenom, _ in connexions]
+    sizes1 = [nb for _, _, nb in connexions]
+    ax1.pie(sizes1, labels=labels1, autopct='%1.1f%%', startangle=140)
+    ax1.set_title("Répartition des connexions par utilisateur")
+    img_connexions = fig_to_base64(fig1)
+
+    # 📊 Barres objets par service
+    fig2, ax2 = plt.subplots()
+    services_labels = [s[0] for s in services]
+    service_counts = [s[1] for s in services]
+    ax2.bar(services_labels, service_counts)
+    ax2.set_title("Top 5 services les plus utilisés")
+    img_services = fig_to_base64(fig2)
+
+    # 📊 Barres des actions par utilisateur
+    fig3, ax3 = plt.subplots()
+    labels3 = [f"{prenom} {nom}" for nom, prenom, _ in actions]
+    actions_counts = [nb for _, _, nb in actions]
+    ax3.barh(labels3, actions_counts)
+    ax3.set_title("Nombre d’actions par utilisateur")
+    img_actions = fig_to_base64(fig3)
+
+    return render_template("rapport.html",
+        date=datetime.date.today(),
+        conso_l=conso_l,
+        conso_w=conso_w,
+        taux_connexion=taux_connexion,
+        services=services,
+        img_connexions=img_connexions,
+        img_services=img_services,
+        img_actions=img_actions
+    )
+
 
 
 @app.route('/visualiser_objet/<string:id>', methods=['GET'])
@@ -703,92 +743,103 @@ def visualiser_objet(id):
         return render_template('visualiser_objet.html', objet=objet)
 
 
-
-
 @app.route('/rapport/pdf')
 def generer_pdf():
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
 
-    # Statistiques de consommation
+    # Données de base
     cur.execute("SELECT SUM(ConsommationL), SUM(ConsommationW) FROM Objet")
     conso_l, conso_w = cur.fetchone()
 
-    # Taux de connexion
     cur.execute("SELECT AVG(nbAcces) FROM Informations")
     taux_connexion = cur.fetchone()[0]
 
-    # Services les plus utilisés
     cur.execute("SELECT service, COUNT(*) FROM Informations GROUP BY service ORDER BY COUNT(*) DESC LIMIT 5")
     services = cur.fetchall()
 
-    # Utilisateurs les plus connectés
-    cur.execute("SELECT nom, prenom, nbAcces FROM Informations ORDER BY nbAcces DESC LIMIT 5")
-    top_connexions = cur.fetchall()
+    cur.execute("SELECT nom, prenom, nbAcces FROM Informations")
+    connexions = cur.fetchall()
 
-    # Utilisateurs avec le plus de points
-    cur.execute("SELECT nom, prenom, points FROM Informations ORDER BY points DESC LIMIT 5")
-    top_points = cur.fetchall()
+    cur.execute("SELECT nom, prenom, nbAction FROM Informations")
+    actions = cur.fetchall()
 
     conn.close()
 
-    # Création du PDF
+    # 🎨 Graphique 1 – Connexions (camembert)
+    fig1, ax1 = plt.subplots()
+    labels1 = [f"{prenom} {nom}" for nom, prenom, _ in connexions]
+    sizes1 = [nb for _, _, nb in connexions]
+    ax1.pie(sizes1, labels=labels1, autopct='%1.1f%%', startangle=140)
+    ax1.set_title("Répartition des connexions par utilisateur")
+    buf1 = io.BytesIO()
+    fig1.savefig(buf1, format='png', bbox_inches='tight')
+    buf1.seek(0)
+    plt.close(fig1)
+
+    # 📊 Graphique 2 – Services (barres)
+    fig2, ax2 = plt.subplots()
+    service_labels = [s[0] for s in services]
+    service_counts = [s[1] for s in services]
+    ax2.bar(service_labels, service_counts)
+    ax2.set_title("Top 5 services les plus utilisés")
+    buf2 = io.BytesIO()
+    fig2.savefig(buf2, format='png', bbox_inches='tight')
+    buf2.seek(0)
+    plt.close(fig2)
+
+    # 📊 Graphique 3 – Actions par utilisateur
+    fig3, ax3 = plt.subplots()
+    action_labels = [f"{prenom} {nom}" for nom, prenom, _ in actions]
+    action_counts = [nb for _, _, nb in actions]
+    ax3.barh(action_labels, action_counts)
+    ax3.set_title("Nombre d’actions par utilisateur")
+    buf3 = io.BytesIO()
+    fig3.savefig(buf3, format='png', bbox_inches='tight')
+    buf3.seek(0)
+    plt.close(fig3)
+
+    # 📝 Création PDF
     pdf = FPDF()
     pdf.add_page()
+
     pdf.set_font("Arial", "B", 16)
-    pdf.set_text_color(40, 70, 100)
-    pdf.cell(0, 10, " Rapport d'utilisation de la plateforme", ln=True, align='C')
+    pdf.cell(0, 10, "Rapport d'utilisation de la plateforme", ln=True, align='C')
 
     pdf.set_font("Arial", "", 12)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 10, f"Date de génération : {datetime.date.today()}", ln=True)
+    pdf.ln(8)
+    pdf.cell(0, 10, f"Date : {datetime.date.today()}", ln=True)
 
     pdf.ln(8)
     pdf.set_font("Arial", "B", 14)
-    pdf.set_fill_color(220, 235, 255)
-    pdf.cell(0, 10, " Consommation énergétique", ln=True, fill=True)
+    pdf.cell(0, 10, "Consommation énergétique", ln=True)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, f"Total en litres : {conso_l or 0:.2f} L", ln=True)
-    pdf.cell(0, 10, f"Total en watts : {conso_w or 0:.2f} W", ln=True)
+    pdf.cell(0, 10, f"- Eau : {conso_l or 0:.2f} L", ln=True)
+    pdf.cell(0, 10, f"- Énergie : {conso_w or 0:.2f} W", ln=True)
 
     pdf.ln(8)
     pdf.set_font("Arial", "B", 14)
-    pdf.set_fill_color(220, 235, 255)
-    pdf.cell(0, 10, " Taux de connexion moyen", ln=True, fill=True)
+    pdf.cell(0, 10, "Taux de connexion moyen", ln=True)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, f"{taux_connexion or 0:.2f} connexions par utilisateur", ln=True)
+    pdf.cell(0, 10, f"{taux_connexion or 0:.2f} connexions/utilisateur", ln=True)
 
-    pdf.ln(8)
-    pdf.set_font("Arial", "B", 14)
-    pdf.set_fill_color(220, 235, 255)
-    pdf.cell(0, 10, " Services les plus utilisés", ln=True, fill=True)
-    pdf.set_font("Arial", "", 12)
-    for service, count in services:
-        pdf.cell(0, 10, f"- {service} : {count} utilisateur(s)", ln=True)
-
-    pdf.ln(8)
-    pdf.set_font("Arial", "B", 14)
-    pdf.set_fill_color(220, 235, 255)
-    pdf.cell(0, 10, " Utilisateurs les plus connectés", ln=True, fill=True)
-    pdf.set_font("Arial", "", 12)
-    for nom, prenom, acces in top_connexions:
-        pdf.cell(0, 10, f"{prenom} {nom} : {acces} connexions", ln=True)
-
-    pdf.ln(8)
-    pdf.set_font("Arial", "B", 14)
-    pdf.set_fill_color(220, 235, 255)
-    pdf.cell(0, 10, "Utilisateurs avec le plus de points", ln=True, fill=True)
-    pdf.set_font("Arial", "", 12)
-    for nom, prenom, points in top_points:
-        pdf.cell(0, 10, f"{prenom} {nom} : {points} points", ln=True)
+    # 📎 Ajout des graphiques
+    for buf in [buf1, buf2, buf3]:
+        pdf.ln(10)
+        img_path = f"/tmp/graph_{datetime.datetime.now().timestamp()}.png"
+        with open(img_path, 'wb') as f:
+            f.write(buf.read())
+        pdf.image(img_path, w=180)
+        buf.close()
 
     pdf.ln(10)
     pdf.set_font("Arial", "I", 10)
-    pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 10, "Généré automatiquement via le tableau de bord - Projet CYTECH", ln=True, align='C')
+    pdf.cell(0, 10, "Généré automatiquement par la plateforme - Projet CYTECH", ln=True, align='C')
 
-    pdf.output("rapport_utilisation.pdf", "F")
-    return send_file("rapport_utilisation.pdf", as_attachment=True)
+    filename = "rapport_utilisation.pdf"
+    pdf.output(filename)
+    return send_file(filename, as_attachment=True)
+
 
 
 if __name__ == '__main__':

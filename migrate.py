@@ -124,8 +124,34 @@ def create_tables():
     print("Table SalleObjet créée (ou existante).")
 
 
+import sqlite3
 
-# Exécution de la fonction pour créer la table
+def create_demande_suppression_table():
+    conn = sqlite3.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeSuppression (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            objet_id INTEGER,
+            pseudonyme VARCHAR(50),
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (objet_id) REFERENCES Objet(ID),
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+    print("Table 'DemandeSuppression' créée avec succès.")
+
 if __name__ == "__main__":
-    create_tables()
+    create_demande_suppression_table()
+
+
+
+
+
 
