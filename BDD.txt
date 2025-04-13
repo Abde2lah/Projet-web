@@ -57,4 +57,11 @@ CREATE TABLE Salle (
     FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
 );
 
+--Création de la table SalleObjet (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    SalleID INTEGER,
+    ObjetID INTEGER,
+    FOREIGN KEY (SalleID) REFERENCES Salle(ID),
+    FOREIGN KEY (ObjetID) REFERENCES Objet(ID)
+);
 

@@ -104,8 +104,28 @@ def add_nbAcces_column():
     con.close()
 
 
+def create_tables():
+    conn = sqlite3.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Création de la table SalleObjet pour associer plusieurs objets à une salle
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS SalleObjet (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        SalleID INTEGER NOT NULL,
+        ObjetID INTEGER NOT NULL,
+        FOREIGN KEY (SalleID) REFERENCES Salle(ID),
+        FOREIGN KEY (ObjetID) REFERENCES Objet(ID)
+    );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("Table SalleObjet créée (ou existante).")
+
+
 
 # Exécution de la fonction pour créer la table
 if __name__ == "__main__":
-    create_salle_table()
+    create_tables()
 
