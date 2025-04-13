@@ -17,18 +17,24 @@
 
         <label>Service :</label>
         <select name="Service" required>
-            <option value="">-- Choisir --</option>
-            {% for s in ['Urgences', 'Pédiatrie', 'Chirurgie', 'Cardiologie', 'Radiologie'] %}
-                <option value="{{ s }}">{{ s }}</option>
-            {% endfor %}
+            <option value="">-- Sélectionner un service --</option>
+            <option value="Urgences">Urgences</option>
+            <option value="Pédiatrie">Pédiatrie</option>
+            <option value="Chirurgie">Chirurgie</option>
+            <option value="Cardiologie">Cardiologie</option>
+            <option value="Radiologie">Radiologie</option>
         </select>
 
-        <label>Objets associés :</label>
-        <select name="ObjetID" multiple>
+        <label>Ajouter un objet :</label>
+        <select id="selectObjet">
             {% for objet in objets %}
                 <option value="{{ objet[0] }}">[{{ objet[0] }}] {{ objet[1] }}</option>
             {% endfor %}
         </select>
+        <button type="button" onclick="ajouterObjet()">➕</button>
+
+        <div id="listeObjets"></div>
+        <div id="hiddenInputs"></div>
 
         <label>Utilisateur responsable :</label>
         <select name="pseudonyme" required>
@@ -37,7 +43,40 @@
             {% endfor %}
         </select>
 
-        <button type="submit">➕ Ajouter</button>
+        <br><br>
+        <button type="submit">✅ Ajouter la salle</button>
     </form>
+
+    <script>
+        function ajouterObjet() {
+            const select = document.getElementById('selectObjet');
+            const value = select.value;
+            const text = select.options[select.selectedIndex].text;
+
+            if (!document.getElementById('hidden_' + value)) {
+                // Création du tag visible
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.id = 'tag_' + value;
+                span.innerHTML = `${text}<button onclick="supprimerObjet('${value}')">x</button>`;
+
+                document.getElementById('listeObjets').appendChild(span);
+
+                // Création du champ caché
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ObjetID[]';
+                input.value = value;
+                input.id = 'hidden_' + value;
+
+                document.getElementById('hiddenInputs').appendChild(input);
+            }
+        }
+
+        function supprimerObjet(value) {
+            document.getElementById('tag_' + value)?.remove();
+            document.getElementById('hidden_' + value)?.remove();
+        }
+    </script>
 </body>
 </html>

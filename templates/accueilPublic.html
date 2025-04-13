@@ -32,17 +32,42 @@
     
     <!-- Texte d'accueil -->
     <div class="texte-bienvenue">
-        Bienvenue à l'Hôpital de Saint-Exemple
+       <h2> Bienvenue à l'Hôpital de Saint-Exemple</h2>
     </div>
     
     <br>
 
     <div class="texte-intro">
-        Notre hôpital s'engage à fournir des soins de qualité à tous nos patients.
+       <h3>Notre hôpital s'engage à fournir des soins de qualité à tous nos patients.
         Nous disposons d'une équipe de médecins et d'infirmières dévoués, prêts à vous aider.
+        </h3>
     </div>
     
     <br><br><br>
+
+    <div class="recherche">
+        <form action="/search">
+            <input type="search" name="search-input" placeholder="Rechercher une personne par nom ou pseudonyme">
+            <select name="service-filter">
+                <option value="">Tous les services</option>
+                <option value="Urgences">Urgences</option>
+                <option value="Pediatrie">Pédiatrie</option>
+                <option value="Anesthesie">Anesthésie-Réanimation</option>
+                <option value="Oncologie">Oncologie</option>
+                <option value="Psychiatrie">Psychiatrie</option>
+            </select>
+            <select name="fonction-filter">
+                <option value="">Toutes les fonctions</option>
+                <option value="medecin">Médecin</option>
+                <option value="infirmier">Infirmier</option>
+                <option value="aide-soignant">Aide-soignant</option>
+                <option value="technicien">Technicien</option>
+                <option value="autre">Autre soignant</option>
+                <option value="admin">Administratif</option>
+            </select>
+            <input type="submit" name="Rechercher">
+        </form>
+    </div>
 
 
     <!-- Informations pratiques -->
