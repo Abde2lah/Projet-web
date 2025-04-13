@@ -221,6 +221,31 @@ footer {
     margin-bottom: 20px;
 }
 
+.tag {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+}
+.tag button {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.badge {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 3px 8px;
+    margin: 2px;
+    border-radius: 10px;
+    font-size: 0.85em;
+}
+
 
 
 

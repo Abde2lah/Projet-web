@@ -1,94 +1,93 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Modifier Salle {{ salle[0] }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Modifier la Salle {{ salle[0] }}</h1>
+    <h1>Modifier la Salle {{ salle[0] }}</h1>
 
-        <form method="POST">
-            <label>Étage :</label>
-            <input type="number" name="Etage" value="{{ salle[1] }}" required>
-
-            <label>Service :</label>
-            <select name="Service" required>
-                {% for s in ['Urgences', 'Pédiatrie', 'Anesthésie-Réanimation', 'Oncologie', 'Psychiatrie'] %}
-                    <option value="{{ s }}" {% if salle[2] == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-            </select>
-
-            <label>Objets associés :</label>
-    <select name="ObjetID" multiple>
-        <option value="">Aucun</option>
-        {% set selected_ids = salle[3].split(',') if salle[3] else [] %}
-        {% for objet in objets %}
-            <option value="{{ objet[0] }}" {% if objet[0]|string in selected_ids %}selected{% endif %}>
-                [{{ objet[0] }}] {{ objet[1] }} – {{ objet[2] }} – {{ objet[3] }}
-            </option>
-        {% endfor %}
-    </select>
-
-            <label>Utilisateur :</label>
-            <select name="pseudonyme" required>
-                {% for user in utilisateurs %}
-                    <option value="{{ user[0] }}" {% if salle[4] == user[0] %}selected{% endif %}>{{ user[0] }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">💾 Enregistrer les modifications</button>
-        </form>
-    </div>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Modifier la Salle</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
-</head>
-<body>
-    <h1>Modifier la Salle #{{ salle[0] }}</h1>
-
-    <form action="{{ url_for('modifier_salle', NumeroSalle=salle[0]) }}" method="POST">
-        <label>Numéro de la Salle :</label>
-        <input type="number" name="NumeroSalle" value="{{ salle[0] }}" readonly>
-
+    <form method="POST">
         <label>Étage :</label>
         <input type="number" name="Etage" value="{{ salle[1] }}" required>
 
         <label>Service :</label>
         <select name="Service" required>
-            {% for service in ['Urgences', 'Pédiatrie', 'Chirurgie', 'Cardiologie', 'Radiologie'] %}
-                <option value="{{ service }}" {% if salle[2] == service %}selected{% endif %}>
-                    {{ service }}
-                </option>
+            {% for s in ['Urgences', 'Pédiatrie', 'Anesthésie-Réanimation', 'Oncologie', 'Psychiatrie'] %}
+                <option value="{{ s }}" {% if salle[2] == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
 
-        <label>Objets associés :</label>
-        <select name="ObjetID" multiple>
+        <label>Ajouter un objet :</label>
+        <select id="selectObjet">
             {% for objet in objets %}
-                <option value="{{ objet[0] }}"
-                    {% if objet[0]|string in objets_associes %}selected{% endif %}>
-                    [{{ objet[0] }}] {{ objet[1] }}
-                </option>
+                <option value="{{ objet[0] }}">[{{ objet[0] }}] {{ objet[1] }}</option>
             {% endfor %}
         </select>
+        <button type="button" onclick="ajouterObjet()">➕</button>
 
-        <label>Responsable :</label>
+        <!-- Tags visibles -->
+        <div id="listeObjets">
+            {% set selected_ids = salle[3].split(',') if salle[3] else [] %}
+            {% for objet in objets %}
+                {% if objet[0]|string in selected_ids %}
+                    <span class="tag" id="tag_{{ objet[0] }}">
+                        [{{ objet[0] }}] {{ objet[1] }}
+                        <button type="button" onclick="supprimerObjet('{{ objet[0] }}')">❌</button>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Inputs cachés envoyés au serveur -->
+        <div id="hiddenInputs">
+            {% for objet in objets %}
+                {% if objet[0]|string in selected_ids %}
+                    <input type="hidden" name="ObjetID[]" value="{{ objet[0] }}" id="hidden_{{ objet[0] }}">
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <label>Utilisateur :</label>
         <select name="pseudonyme" required>
             {% for user in utilisateurs %}
-                <option value="{{ user[0] }}" {% if user[0] == salle[3] %}selected{% endif %}>
-                    {{ user[0] }}
-                </option>
+                <option value="{{ user[0] }}" {% if salle[4] == user[0] %}selected{% endif %}>{{ user[0] }}</option>
             {% endfor %}
         </select>
 
-        <button type="submit">💾 Enregistrer</button>
+        <br><br>
+        <button type="submit">💾 Enregistrer les modifications</button>
     </form>
+
+    <script>
+        function ajouterObjet() {
+            const select = document.getElementById('selectObjet');
+            const value = select.value;
+            const text = select.options[select.selectedIndex].text;
+
+            if (!document.getElementById('hidden_' + value)) {
+                // Tag visible
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.id = 'tag_' + value;
+                span.innerHTML = `${text} <button type="button" onclick="supprimerObjet('${value}')">❌</button>`;
+                document.getElementById('listeObjets').appendChild(span);
+
+                // Champ caché à envoyer
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ObjetID[]';
+                input.value = value;
+                input.id = 'hidden_' + value;
+                document.getElementById('hiddenInputs').appendChild(input);
+            }
+        }
+
+        function supprimerObjet(value) {
+            document.getElementById('tag_' + value)?.remove();
+            document.getElementById('hidden_' + value)?.remove();
+        }
+    </script>
 </body>
 </html>

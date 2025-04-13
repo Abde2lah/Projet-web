@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mail import Mail, Message
 import sqlite3 as sql
 import bcrypt
+import matplotlib.pyplot as plt
+import io 
 from config import Config
 from models import *
 import os
@@ -55,18 +57,29 @@ def accueilPublic():
 @app.route('/gestion_ressources')
 def gestion_ressources():
     if 'username' not in session:
-        flash("Veuillez vous connecter.")
         return redirect(url_for('connexion'))
-    
+
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM Salle")
+
+    # Cette requête récupère chaque salle avec ses objets associés (concaténés)
+    cur.execute("""
+        SELECT s.NumeroSalle, s.Etage, s.Service, s.pseudonyme,
+               GROUP_CONCAT(o.nom, ', ') as objets
+        FROM Salle s
+        LEFT JOIN SalleObjet so ON s.NumeroSalle = so.SalleID
+        LEFT JOIN Objet o ON so.ObjetID = o.ID
+        GROUP BY s.NumeroSalle
+    """)
     salles = cur.fetchall()
+
     cur.execute("SELECT * FROM Objet")
     objets = cur.fetchall()
+
     conn.close()
 
-    return render_template('gestion_ressources.html', salles=salles, objets=objets)
+    return render_template("gestion_ressources.html", salles=salles, objets=objets)
+
 
 
 @app.route('/ajouter_salle', methods=['GET', 'POST'])
@@ -74,24 +87,24 @@ def ajouter_salle():
     if 'username' not in session:
         return redirect(url_for('connexion'))
 
-    conn = sql.connect("donnees.db")
-    cur = conn.cursor()
-
     if request.method == 'POST':
         numero_salle = request.form['NumeroSalle']
         etage = request.form['Etage']
         service = request.form['Service']
         pseudonyme = request.form['pseudonyme']
-        objet_ids = request.form.getlist('ObjetID')  # Attention : champ multiple !
+        objet_ids = request.form.getlist('ObjetID[]')  # ✅ Correct name
+
+        print("Objets sélectionnés :", objet_ids, type(objet_ids))  # 🧪 Debug temporaire
+
+        conn = sql.connect("donnees.db")
+        cur = conn.cursor()
 
         try:
-            # Ajout de la salle
             cur.execute("""
                 INSERT INTO Salle (NumeroSalle, Etage, Service, pseudonyme)
                 VALUES (?, ?, ?, ?)
             """, (numero_salle, etage, service, pseudonyme))
 
-            # Ajout des associations avec les objets
             for objet_id in objet_ids:
                 cur.execute("INSERT INTO SalleObjet (SalleID, ObjetID) VALUES (?, ?)", (numero_salle, objet_id))
 
@@ -105,7 +118,7 @@ def ajouter_salle():
         finally:
             conn.close()
 
-    # En GET, on affiche le formulaire avec les objets et utilisateurs disponibles
+    # En GET
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
     cur.execute("SELECT ID, nom FROM Objet")
@@ -116,6 +129,8 @@ def ajouter_salle():
 
     return render_template('ajouter_salle.html', objets=objets, utilisateurs=utilisateurs)
 
+
+    return render_template('ajouter_salle.html', objets=objets, utilisateurs=utilisateurs)
 @app.route('/modifier_salle/<int:NumeroSalle>', methods=['GET', 'POST'])
 def modifier_salle(NumeroSalle):
     if 'username' not in session:
@@ -128,20 +143,20 @@ def modifier_salle(NumeroSalle):
         etage = request.form['Etage']
         service = request.form['Service']
         pseudonyme = request.form['pseudonyme']
-        objet_ids = request.form.getlist('ObjetID')
+        objet_ids = request.form.getlist('ObjetID[]')
 
         try:
-            # Mettre à jour la salle
+            # Mise à jour de la salle
             cur.execute("""
                 UPDATE Salle
                 SET Etage = ?, Service = ?, pseudonyme = ?
                 WHERE NumeroSalle = ?
             """, (etage, service, pseudonyme, NumeroSalle))
 
-            # Supprimer les anciennes liaisons
+            # Supprimer les anciennes associations d’objets
             cur.execute("DELETE FROM SalleObjet WHERE SalleID = ?", (NumeroSalle,))
 
-            # Ajouter les nouvelles
+            # Ajouter les nouvelles associations
             for objet_id in objet_ids:
                 cur.execute("INSERT INTO SalleObjet (SalleID, ObjetID) VALUES (?, ?)", (NumeroSalle, objet_id))
 
@@ -151,33 +166,38 @@ def modifier_salle(NumeroSalle):
 
         except Exception as e:
             conn.rollback()
-            flash(f"Erreur : {e}")
+            flash(f"Erreur lors de la modification : {e}")
         finally:
             conn.close()
 
+    # En GET : afficher les infos de la salle à modifier
+    cur.execute("""
+        SELECT s.NumeroSalle, s.Etage, s.Service, s.pseudonyme,
+            GROUP_CONCAT(so.ObjetID) as objets
+        FROM Salle s
+        LEFT JOIN SalleObjet so ON s.NumeroSalle = so.SalleID
+        WHERE s.NumeroSalle = ?
+        GROUP BY s.NumeroSalle
+    """, (NumeroSalle,))
+    salle_row = cur.fetchone()
+
+    if salle_row:
+        salle = (salle_row[0], salle_row[1], salle_row[2], salle_row[4], salle_row[3])  # Reorder for template: id, étage, service, objets, user
     else:
-        # Récupérer les infos pour le formulaire
-        cur.execute("SELECT NumeroSalle, Etage, Service, pseudonyme FROM Salle WHERE NumeroSalle = ?", (NumeroSalle,))
-        salle = cur.fetchone()
+        flash("Salle introuvable.")
+        return redirect(url_for('gestion_ressources'))
 
-        cur.execute("SELECT ID, nom FROM Objet")
-        objets = cur.fetchall()
+    # Récupérer objets et utilisateurs
+    cur.execute("SELECT ID, nom FROM Objet")
+    objets = cur.fetchall()
+    cur.execute("SELECT pseudonyme FROM Connexion")
+    utilisateurs = cur.fetchall()
 
-        cur.execute("SELECT ObjetID FROM SalleObjet WHERE SalleID = ?", (NumeroSalle,))
-        objets_associes = [str(row[0]) for row in cur.fetchall()]
+    conn.close()
 
-        cur.execute("SELECT pseudonyme FROM Connexion")
-        utilisateurs = cur.fetchall()
+    return render_template('modifier_salle.html', salle=salle, objets=objets, utilisateurs=utilisateurs)
 
-        conn.close()
 
-        return render_template(
-            'modifier_salle.html',
-            salle=salle,
-            objets=objets,
-            objets_associes=objets_associes,
-            utilisateurs=utilisateurs
-        )
 @app.route('/supprimer_salle/<int:NumeroSalle>', methods=['POST'])
 def supprimer_salle(NumeroSalle):
     if 'username' not in session:

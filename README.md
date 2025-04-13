@@ -73,6 +73,10 @@ La conception de ce site a été faite grâce à plusieurs bibliothèques :
 - `os` → pour les fonctionnalités dépendantes du systeme d'exploitation
 - `werkzeug` → pour la gestion des photos de profil dans un dossier sécurisé
 - `fpdf` →  pour la création d'un rapport PDF contenant toutes les statistiques du site
+- `datetime` →  pour avoir accès au temps du système
+- `matplotlib` → pour tracer des diagrammes
+- `io` →
+- `base64` →
 
 Tous ces bibliothèques ont été importés gràce à la commande `pip install [nom de la bibliothèque]` sous Linux.
 Sous Windows, on utilisera la même commande.

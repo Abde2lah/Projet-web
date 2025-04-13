@@ -7,6 +7,12 @@ from models import *
 import os
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer
+import matplotlib.pyplot as plt
+import io
+import base64
+import datetime
+from fpdf import FPDF
+
 
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -237,3 +243,13 @@ def get_user_by_nom(nom):
     user = cur.fetchone()
     con.close()
     return user
+
+
+def fig_to_base64(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    base64_str = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+    plt.close(fig)
+    return base64_str

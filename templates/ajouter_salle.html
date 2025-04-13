@@ -54,21 +54,17 @@
             const text = select.options[select.selectedIndex].text;
 
             if (!document.getElementById('hidden_' + value)) {
-                // Création du tag visible
                 const span = document.createElement('span');
                 span.className = 'tag';
                 span.id = 'tag_' + value;
-                span.innerHTML = `${text}<button onclick="supprimerObjet('${value}')">x</button>`;
-
+                span.innerHTML = `${text} <button type="button" onclick="supprimerObjet('${value}')">❌</button>`;
                 document.getElementById('listeObjets').appendChild(span);
 
-                // Création du champ caché
                 const input = document.createElement('input');
                 input.type = 'hidden';
-                input.name = 'ObjetID[]';
+                input.name = 'ObjetID[]';  // ✅ Très important : le [] pour forcer la liste même avec 1 élément
                 input.value = value;
                 input.id = 'hidden_' + value;
-
                 document.getElementById('hiddenInputs').appendChild(input);
             }
         }
