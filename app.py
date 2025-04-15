@@ -1168,7 +1168,7 @@ def admin_dashboard():
             "statut_index": statut_index
         })
 
-        ajouter_bloc(
+    ajouter_bloc(
         """
         SELECT d.id, o.nom, d.pseudonyme, d.message, d.statut, d.date_creation
         FROM DemandeSuppression d
@@ -1179,15 +1179,6 @@ def admin_dashboard():
         "🗃️ Suppression d'objet",
         "demande",
         4
-    )
-
-
-    ajouter_bloc(
-        "SELECT id, pseudonyme, message, statut, date_creation FROM DemandeRole",
-        ["ID", "Utilisateur", "Message", "Statut", "Date"],
-        "👑 Rôles",
-        "role",
-        3
     )
 
     ajouter_bloc(
@@ -1207,12 +1198,18 @@ def admin_dashboard():
     )
 
     ajouter_bloc(
-        "SELECT d.id, s.NumeroSalle, d.pseudonyme, d.message, d.statut, d.date_creation FROM DemandeSuppressionSalle d JOIN Salle s ON d.NumeroSalle = s.NumeroSalle",
+        """
+        SELECT d.id, s.NumeroSalle, d.pseudonyme, d.message, d.statut, d.date_creation
+        FROM DemandeSuppressionSalle d
+        JOIN Salle s ON d.NumeroSalle = s.NumeroSalle
+        ORDER BY d.date_creation DESC
+        """,
         ["ID", "Salle", "Utilisateur", "Message", "Statut", "Date"],
         "🧯 Suppression de salle",
         "suppression_salle",
         4
     )
+
 
     ajouter_bloc(
         "SELECT id, pseudonyme, nom, type, service, message, statut, date_creation FROM DemandeCreationObjet",
