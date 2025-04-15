@@ -3,16 +3,34 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
     <div class="button-group">
-        {% if get_user_type(session['username']) >=2 %}
-        <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
-        <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
+        <!-- A COMPLETERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR avec ajout salle et ajout objet--->
+        
+        {% if get_user_type(session['username']) == 1 %}
+        
         <a href="{{ url_for('rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
+
         {% endif %}
+
+        {% if get_user_type(session['username']) == 2 %}
+
+        <a href="{{ url_for('creer_objet') }}"><button class="btn btn-warning">🛠️ Ajouter un objet à la collection</button></a>
+
+        <a href="{{ url_for('rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
+
+        {% endif %}
+        
         {% if get_user_type(session['username']) == 3 %}
-        <a href="{{ url_for('admin_dashboard') }}">
-            <button class="btn btn-dark">🛠️ Accès au tableau de bord admin</button>
-        </a>
+
+        <a href="{{ url_for('ajouter_salle') }}"><button class="btn">➕ Ajouter une salle</button></a>
+
+        <a href="{{ url_for('creer_objet') }}"><button class="btn">📦 Ajouter un objet</button></a>
+
+        <a href="{{ url_for('rapport') }}"><button class="btn">📄 Générer rapport PDF</button></a>
+
+        <a href="{{ url_for('admin_dashboard') }}"><button class="btn btn-dark">🛠️ Accès au tableau de bord admin</button>
+
         {% endif %}
+
     </div>
     <div class="resource-flex">
         <!-- COLONNE GAUCHE : SALLES -->
@@ -25,6 +43,9 @@
                     <p><strong>Étage :</strong> {{ salle[1] }}</p>
                     <p><strong>Objets associés :</strong> {{ salle[4] if salle[4] else "Aucun objet" }}</p>
                     <p><strong>Utilisateur :</strong> {{ salle[3] }}</p>
+
+                    <!--Admin-->
+
                     {% if get_user_type(session['username']) == 3 %}
                     <form action="{{ url_for('supprimer_salle', NumeroSalle=salle[0]) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');">
                         <button class="btn danger" type="submit">🗑 Supprimer</button>
@@ -33,14 +54,17 @@
                         <button class="btn">✏️ Modifier</button>
                     </a>
                     {% endif %}
+                    <!--complexe-->
+                    {% if get_user_type(session['username']) == 2 %}
+                    <a href="{{ url_for('visualiser_salle', NumeroSalle=salle[0]) }}"><button class="btn">✏️ Modifier</button></a>
+                    <!--FAIRE UN VISUALLISER SALLE-->
+                    {% endif %}
                 </div>
                 {% endfor %}
             {% else %}
                 <p>Aucune salle enregistrée.</p>
             {% endif %}
         </div>
-        
-        
 
         <!-- COLONNE DROITE : OBJETS -->
         <div class="objets-column">
@@ -53,17 +77,30 @@
                 <p><strong>Température :</strong> {{ objet[1] }}°C → {{ objet[2] }}°C</p>
                 <p><strong>Marque :</strong> {{ objet[7] }}</p>
                 <p><strong>Mode :</strong> {{ objet[3] }}</p>
-                {% if get_user_type(session['username']) >= 2 %}
+
+                <!--Admin-->
+                {% if get_user_type(session['username']) == 3 %}
                 <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
                     <button type="submit" class="btn danger">🗑 Supprimer</button>
                     <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn">✏️ Modifier</a>
                     <a href="{{ url_for('visualiser_objet', id=objet[0]) }}" class="btn">👁️ Visualiser</a>
                 </form>
                 {% endif %}
+                <!--complexe-->
+                {%if get_user_type(session['username']) == 2 %}
+                <form method="POST" action="{{ url_for('supprimer_objet', id=objet[0]) }}" onsubmit="return confirm('Confirmer la suppression de l’objet ?');">
+                    <button type="submit" class="btn danger">🗑 Supprimer</button>
+                    <a href="{{ url_for('modifier_objet', id=objet[0]) }}" class="btn">✏️ Modifier</a>
+                    <a href="{{ url_for('visualiser_objet', id=objet[0]) }}" class="btn">👁️ Visualiser</a>
+                </form>
+                {% endif %}
+
+                <!--simple-->
                 {% if get_user_type(session['username']) == 1 %}
                 <form method="POST" action="{{ url_for('demande_suppression_objet', id=objet[0]) }}" onsubmit="return confirm('Souhaitez-vous vraiment demander la suppression de cet objet ?');">
                     <input type="hidden" name="message" value="Demande de suppression par l'utilisateur.">
                     <button class="btn btn-warning" type="submit">🛑 Demander la suppression</button>
+                    <a href="{{ url_for('visualiser_objet', id=objet[0]) }}" class="btn">👁️ Visualiser</a>
                 </form>
                 {% endif %}
             </div>

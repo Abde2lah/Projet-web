@@ -68,7 +68,7 @@ def gestion_ressources():
     # Cette requête récupère chaque salle avec ses objets associés (concaténés)
     cur.execute("""
         SELECT s.NumeroSalle, s.Etage, s.Service, s.pseudonyme,
-               GROUP_CONCAT(o.nom, ', ') as objets
+        GROUP_CONCAT(o.nom, ', ') as objets
         FROM Salle s
         LEFT JOIN SalleObjet so ON s.NumeroSalle = so.SalleID
         LEFT JOIN Objet o ON so.ObjetID = o.ID
