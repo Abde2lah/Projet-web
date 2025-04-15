@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <title>Demande d'une création de salle</title>
+</head>
+<body>
+    <h2>📝 Demande de Création de Salle</h2>
+<form method="POST">
+    <label>Numéro de Salle :</label><br>
+    <input type="text" name="numero_salle" required><br><br>
+
+    <label>Étage :</label><br>
+    <input type="number" name="etage" required><br><br>
+
+    <label>Service :</label><br>
+    <select name="service" required>
+        <option value="Urgences">Urgences</option>
+        <option value="Pédiatrie">Pédiatrie</option>
+        <option value="Chirurgie">Chirurgie</option>
+        <option value="Cardiologie">Cardiologie</option>
+        <option value="Radiologie">Radiologie</option>
+    </select><br><br>
+
+    <label>Message :</label><br>
+    <textarea name="message" rows="4" cols="50" placeholder="Précisez si vous voulez des objets spécifiques..."></textarea><br><br>
+
+    <button type="submit">📤 Envoyer</button>
+</form>
+
+</body>
+</html>

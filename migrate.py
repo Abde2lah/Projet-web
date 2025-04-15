@@ -165,8 +165,105 @@ def create_demande_role_table():
     conn.close()
     print("✅ Table 'DemandeRole' créée avec succès.")
 
+
+def run_migration():
+    conn = sqlite3.connect('donnees.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeUpgrade (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pseudonyme TEXT NOT NULL,
+            niveau_actuel INTEGER NOT NULL,
+            niveau_demande INTEGER NOT NULL,
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Migration terminée : table DemandeUpgrade créée avec succès.")
+
+def run_migration2():
+    conn = sqlite3.connect('donnees.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeCreationSalle (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pseudonyme TEXT NOT NULL,
+            numero_salle TEXT NOT NULL,
+            etage INTEGER,
+            service TEXT,
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Migration terminée : table DemandeCreationSalle créée avec succès.")
+
+
+
+def run_migration3():
+    conn = sqlite3.connect('donnees.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeCreationObjet (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pseudonyme TEXT NOT NULL,
+            nom TEXT NOT NULL,
+            type TEXT NOT NULL,
+            service TEXT,
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Table DemandeCreationObjet créée avec succès.")
+
+import sqlite3
+
+def run_migration4():
+    conn = sqlite3.connect('donnees.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS DemandeSuppressionSalle (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            NumeroSalle INTEGER NOT NULL,
+            pseudonyme TEXT NOT NULL,
+            message TEXT,
+            statut TEXT DEFAULT 'en attente',
+            date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (NumeroSalle) REFERENCES Salle(NumeroSalle),
+            FOREIGN KEY (pseudonyme) REFERENCES Connexion(pseudonyme)
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Table DemandeSuppressionSalle créée avec succès.")
+
+
+
+
+
 if __name__ == "__main__":
-    create_demande_role_table()
+    run_migration3()
+
+
 
 
 

@@ -678,8 +678,7 @@ def rapport():
     )
 
 
-
-@app.route('/visualiser_objet/<string:id>', methods=['GET'])
+@app.route('/visualiser_objet/<id>', methods=['GET','POST'])
 def visualiser_objet(id):
     if 'username' not in session:
         return redirect(url_for('connexion'))
@@ -687,9 +686,6 @@ def visualiser_objet(id):
     pseudonyme = session['username']
     user_type = get_user_type(pseudonyme)
 
-    if not user_type or int(user_type[0]) < 2:
-        flash("Accès réservé aux administrateurs.")
-        return redirect(url_for('gestion_ressources'))
 
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
@@ -741,6 +737,42 @@ def visualiser_objet(id):
     else:
         conn.close()
         return render_template('visualiser_objet.html', objet=objet)
+    
+@app.route('/visualiser_salle/<int:NumeroSalle>')
+def visualiser_salle(NumeroSalle):
+    if 'username' not in session:
+        flash("Connexion requise.")
+        return redirect(url_for('connexion'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Récupère la salle
+    cur.execute("""
+        SELECT NumeroSalle, Etage, Service, pseudonyme
+        FROM Salle
+        WHERE NumeroSalle = ?
+    """, (NumeroSalle,))
+    salle = cur.fetchone()
+
+    if not salle:
+        flash("Salle introuvable.")
+        conn.close()
+        return redirect(url_for('gestion_ressources'))
+
+    # Récupère les objets associés
+    cur.execute("""
+        SELECT o.nom, o.type, o.service, o.marque
+        FROM SalleObjet so
+        JOIN Objet o ON so.ObjetID = o.ID
+        WHERE so.SalleID = ?
+    """, (NumeroSalle,))
+    objets = cur.fetchall()
+
+    conn.close()
+
+    return render_template("visualiser_salle.html", salle=salle, objets=objets)
+
 
 
 @app.route('/rapport/pdf')
@@ -1007,10 +1039,63 @@ def refuser_role(id):
     flash("🚫 Demande refusée.")
     return redirect(url_for('voir_demandes_role'))
 
+@app.route('/demande_upgrade', methods=['GET', 'POST'])
+def demande_upgrade():
+    if 'username' not in session:
+        flash("Connexion requise.")
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)[0]
+
+    if user_type == 3:
+        flash("Tu es déjà administrateur 👑")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Vérifie s’il y a déjà une demande en attente
+    cur.execute("SELECT COUNT(*) FROM DemandeUpgrade WHERE pseudonyme=? AND statut='en attente'", (pseudonyme,))
+    if cur.fetchone()[0] > 0:
+        flash("❗ Une demande est déjà en attente.")
+        conn.close()
+        return redirect(url_for('accueil'))
+
+    if request.method == 'POST':
+        message = request.form.get('message', '')
+        niveau_suivant = user_type + 1  # 1 → 2, 2 → 3
+
+        cur.execute("""
+            INSERT INTO DemandeUpgrade (pseudonyme, niveau_actuel, niveau_demande, message)
+            VALUES (?, ?, ?, ?)
+        """, (pseudonyme, user_type, niveau_suivant, message))
+
+        conn.commit()
+        flash("✅ Demande de promotion envoyée. En attente de validation.")
+        conn.close()
+        return redirect(url_for('accueil'))
+
+    conn.close()
+    return render_template('demande_upgrade.html', user_type=user_type)
+
+@app.route('/admin/demandes_upgrade')
+def voir_demandes_upgrade():
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM DemandeUpgrade ORDER BY date_creation DESC")
+    demandes = cur.fetchall()
+    conn.close()
+
+    return render_template("admin_demandes_upgrade.html", demandes=demandes)
 
 
-@app.route('/admin/dashboard')
-def admin_dashboard():
+@app.route('/admin/demande_upgrade/<int:id>/valider')
+def valider_upgrade(id):
     if not est_admin():
         flash("Accès refusé.")
         return redirect(url_for('accueil'))
@@ -1018,23 +1103,339 @@ def admin_dashboard():
     conn = sql.connect("donnees.db")
     cur = conn.cursor()
 
-    # Comptes
+    # Récupérer la demande
+    cur.execute("SELECT pseudonyme, niveau_demande FROM DemandeUpgrade WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        pseudo, niveau_demande = row
+        cur.execute("UPDATE Connexion SET type = ? WHERE pseudonyme = ?", (niveau_demande, pseudo))
+        cur.execute("UPDATE DemandeUpgrade SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash(f"✅ {pseudo} a été promu au niveau {niveau_demande}.")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('voir_demandes_upgrade'))
+
+
+@app.route('/admin/demande_upgrade/<int:id>/refuser')
+def refuser_upgrade(id):
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeUpgrade SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('voir_demandes_upgrade'))
+
+
+@app.route('/demande_creation_salle', methods=['GET', 'POST'])
+def demande_creation_salle():
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)[0]
+
+    if user_type >= 3:
+        flash("Tu peux créer directement une salle.")
+        return redirect(url_for('ajouter_salle'))
+
+    if request.method == 'POST':
+        numero_salle = request.form.get('numero_salle')
+        etage = request.form.get('etage')
+        service = request.form.get('service')
+        message = request.form.get('message')
+
+        conn = sql.connect("donnees.db")
+        cur = conn.cursor()
+
+        cur.execute("""
+            INSERT INTO DemandeCreationSalle (pseudonyme, numero_salle, etage, service, message)
+            VALUES (?, ?, ?, ?, ?)
+        """, (pseudonyme, numero_salle, etage, service, message))
+
+        conn.commit()
+        conn.close()
+        flash("✅ Demande de création de salle envoyée à l'administrateur.")
+        return redirect(url_for('gestion_ressources'))
+
+    return render_template('demande_creation_salle.html')
+
+@app.route('/admin/demandes_salle')
+def demandes_creation_salle():
+    if not est_admin():
+        flash("Accès réservé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM DemandeCreationSalle ORDER BY date_creation DESC")
+    demandes = cur.fetchall()
+    conn.close()
+    return render_template("admin_demandes_salle.html", demandes=demandes)
+
+
+@app.route('/admin/demande_salle/<int:id>/valider')
+def valider_demande_salle(id):
+    if not est_admin():
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT numero_salle, etage, service, pseudonyme FROM DemandeCreationSalle WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        numero, etage, service, pseudo = row
+        cur.execute("INSERT INTO Salle (NumeroSalle, Etage, Service, pseudonyme) VALUES (?, ?, ?, ?)",
+                    (numero, etage, service, pseudo))
+        cur.execute("UPDATE DemandeCreationSalle SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash("✅ Salle créée et demande validée.")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('demandes_creation_salle'))
+
+
+@app.route('/admin/demande_salle/<int:id>/refuser')
+def refuser_demande_salle(id):
+    if not est_admin():
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeCreationSalle SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('demandes_creation_salle'))
+
+@app.route('/demande_creation_objet', methods=['GET', 'POST'])
+def demande_creation_objet():
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    user_type = get_user_type(pseudonyme)[0]
+
+    if user_type >= 2:
+        flash("Tu as déjà accès à la création directe d’objets.")
+        return redirect(url_for('creer_objet'))
+
+    if request.method == 'POST':
+        nom = request.form['nom']
+        type_objet = request.form['type']
+        service = request.form['service']
+        message = request.form.get('message', '')
+
+        conn = sql.connect("donnees.db")
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO DemandeCreationObjet (pseudonyme, nom, type, service, message)
+            VALUES (?, ?, ?, ?, ?)
+        """, (pseudonyme, nom, type_objet, service, message))
+
+        conn.commit()
+        conn.close()
+        flash("✅ Demande envoyée à l’administrateur.")
+        return redirect(url_for('gestion_ressources'))
+
+    return render_template('demande_creation_objet.html')
+
+@app.route('/admin/demandes_objet')
+def demandes_creation_objet():
+    if not est_admin():
+        flash("Accès réservé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM DemandeCreationObjet ORDER BY date_creation DESC")
+    demandes = cur.fetchall()
+    conn.close()
+    return render_template("admin_demandes_objet.html", demandes=demandes)
+
+@app.route('/admin/demande_objet/<int:id>/valider')
+def valider_demande_objet(id):
+    if not est_admin():
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("SELECT nom, type, service, pseudonyme FROM DemandeCreationObjet WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        nom, type_objet, service, pseudo = row
+        cur.execute("""
+            INSERT INTO Objet (ID, TempActuelle, tempcible, mode, connectivite, batterie,
+                               service, marque, nom, type, dernierReglage, ConsommationL, ConsommationW)
+            VALUES (?, 0, 0, 'auto', 'wifi', 100, ?, 'standard', ?, ?, DATE(), 0, 0)
+        """, (id, service, nom, type_objet))
+        cur.execute("UPDATE DemandeCreationObjet SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash("✅ Objet créé avec succès.")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('demandes_creation_objet'))
+
+@app.route('/admin/demande_objet/<int:id>/refuser')
+def refuser_demande_objet(id):
+    if not est_admin():
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeCreationObjet SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('demandes_creation_objet'))
+
+@app.route('/salle/<int:NumeroSalle>/demande_suppression', methods=['POST'])
+def demande_suppression_salle(NumeroSalle):
+    if 'username' not in session:
+        return redirect(url_for('connexion'))
+
+    pseudonyme = session['username']
+    message = request.form.get('message', '')
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Vérifie s'il y a déjà une demande
+    cur.execute("""
+        SELECT COUNT(*) FROM DemandeSuppressionSalle
+        WHERE NumeroSalle = ? AND statut = 'en attente'
+    """, (NumeroSalle,))
+    if cur.fetchone()[0] > 0:
+        flash("❗ Une demande pour cette salle est déjà en attente.")
+    else:
+        cur.execute("""
+            INSERT INTO DemandeSuppressionSalle (NumeroSalle, pseudonyme, message)
+            VALUES (?, ?, ?)
+        """, (NumeroSalle, pseudonyme, message))
+        conn.commit()
+        flash("✅ Demande de suppression envoyée à l'administrateur.")
+
+    conn.close()
+    return redirect(url_for('gestion_ressources'))
+
+@app.route('/admin/demandes_suppression_salle')
+def voir_demandes_suppression_salle():
+    if not est_admin():
+        flash("Accès réservé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT d.id, s.NumeroSalle, d.pseudonyme, d.message, d.statut, d.date_creation
+        FROM DemandeSuppressionSalle d
+        JOIN Salle s ON d.NumeroSalle = s.NumeroSalle
+        ORDER BY d.date_creation DESC
+    """)
+    demandes = cur.fetchall()
+    conn.close()
+    return render_template("admin_demandes_suppression_salle.html", demandes=demandes)
+
+@app.route('/admin/demande_salle/<int:id>/valider')
+def valider_suppression_salle(id):
+    if not est_admin():
+        flash("Accès refusé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Récupère la salle concernée
+    cur.execute("SELECT NumeroSalle FROM DemandeSuppressionSalle WHERE id = ?", (id,))
+    row = cur.fetchone()
+
+    if row:
+        numero_salle = row[0]
+        cur.execute("DELETE FROM SalleObjet WHERE SalleID = ?", (numero_salle,))
+        cur.execute("DELETE FROM Salle WHERE NumeroSalle = ?", (numero_salle,))
+        cur.execute("UPDATE DemandeSuppressionSalle SET statut = 'validée' WHERE id = ?", (id,))
+        conn.commit()
+        flash("✅ Salle supprimée et demande validée.")
+    else:
+        flash("❌ Demande introuvable.")
+
+    conn.close()
+    return redirect(url_for('voir_demandes_suppression_salle'))
+
+@app.route('/admin/demande_salle/<int:id>/refuser')
+def refuser_suppression_salle(id):
+    if not est_admin():
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE DemandeSuppressionSalle SET statut = 'refusée' WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("🚫 Demande refusée.")
+    return redirect(url_for('voir_demandes_suppression_salle'))
+
+
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if not est_admin():
+        flash("Accès réservé.")
+        return redirect(url_for('accueil'))
+
+    conn = sql.connect("donnees.db")
+    cur = conn.cursor()
+
+    # Comptes globaux
     cur.execute("SELECT COUNT(*) FROM DemandeSuppression WHERE statut='en attente'")
     nb_supp = cur.fetchone()[0]
 
     cur.execute("SELECT COUNT(*) FROM DemandeRole WHERE statut='en attente'")
     nb_roles = cur.fetchone()[0]
 
-    cur.execute("""
-        SELECT d.id, o.nom, d.pseudonyme, d.message, d.statut, d.date_creation
-        FROM DemandeSuppression d
-        JOIN Objet o ON d.objet_id = o.ID
-        ORDER BY d.date_creation DESC
-    """)
+    cur.execute("SELECT COUNT(*) FROM DemandeUpgrade WHERE statut='en attente'")
+    nb_upgrades = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM DemandeCreationSalle WHERE statut='en attente'")
+    nb_salles = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM DemandeCreationObjet WHERE statut='en attente'")
+    nb_objets = cur.fetchone()[0]
+
+    # Contenus des demandes
+    cur.execute("SELECT id, objet_id, pseudonyme, message, statut, date_creation FROM DemandeSuppression ORDER BY date_creation DESC")
     demandes_suppression = cur.fetchall()
 
     cur.execute("SELECT id, pseudonyme, message, statut, date_creation FROM DemandeRole ORDER BY date_creation DESC")
     demandes_roles = cur.fetchall()
+
+    cur.execute("SELECT id, pseudonyme, niveau_actuel, niveau_demande, message, statut, date_creation FROM DemandeUpgrade ORDER BY date_creation DESC")
+    demandes_upgrade = cur.fetchall()
+
+    cur.execute("SELECT id, pseudonyme, numero_salle, etage, service, message, statut, date_creation FROM DemandeCreationSalle ORDER BY date_creation DESC")
+    demandes_salles = cur.fetchall()
+
+    cur.execute("SELECT id, pseudonyme, nom, type, service, message, statut, date_creation FROM DemandeCreationObjet ORDER BY date_creation DESC")
+    demandes_objets = cur.fetchall()
 
     conn.close()
 
@@ -1042,9 +1443,16 @@ def admin_dashboard():
         "admin_dashboard.html",
         nb_supp=nb_supp,
         nb_roles=nb_roles,
+        nb_upgrades=nb_upgrades,
+        nb_salles=nb_salles,
+        nb_objets=nb_objets,
         demandes_suppression=demandes_suppression,
-        demandes_roles=demandes_roles
+        demandes_roles=demandes_roles,
+        demandes_upgrade=demandes_upgrade,
+        demandes_salles=demandes_salles,
+        demandes_objets=demandes_objets
     )
+
 
 
 

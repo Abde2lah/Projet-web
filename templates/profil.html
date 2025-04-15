@@ -57,11 +57,8 @@
         <a href="{{ url_for('logout') }}" class="btn btn-danger">Se déconnecter</a>
         <a href="{{ url_for('liste_utilisateurs') }}" class="btn btn-primary">Voir les autres profils</a>
     </div>
-    {% if session['type'] != 3 %}
-    <form method="POST" action="{{ url_for('demande_role') }}">
-        <input type="hidden" name="message" value="Je souhaite devenir administrateur.">
-        <button class="btn btn-outline-primary mt-3" type="submit">👑 Demander un rôle Admin</button>
-    </form>
+    {% if get_user_type(user[12]) in [1, 2] %}
+    <a href="{{ url_for('demande_upgrade') }}"><button class="btn btn-info">📈 Demander une évolution de rôle</button></a>
     {% endif %}
 
     <!-- Lien vers Bootstrap JS (facultatif si besoin de JavaScript) -->

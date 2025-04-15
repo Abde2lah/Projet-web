@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande d'upgrade</title>
+</head>
+<body>
+    <h2>Demande d'évolution de rôle</h2>
+<form method="POST">
+    <p>Vous êtes actuellement de type {{ user_type }}.
+    Vous allez demander à devenir :
+    <strong>{% if user_type == 1 %}Complexe (2){% else %}Administrateur (3){% endif %}</strong>
+    </p>
+    <label for="message">Message (objet à mettre dans la salle par ex) :</label><br>
+    <textarea name="message" rows="4" cols="50" placeholder="Expliquez pourquoi vous souhaitez évoluer..."></textarea>
+    <br><br>
+    <button type="submit">📤 Envoyer la demande</button>
+</form>
+
+</body>
+</html>

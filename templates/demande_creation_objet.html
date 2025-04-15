@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <title>Demande de création d'objets</title>
+</head>
+<body>
+    <h2>📦 Demande de Création d'Objet</h2>
+<form method="POST">
+    <label>Nom de l’objet :</label><br>
+    <input type="text" name="nom" required><br><br>
+
+    <label>Type :</label><br>
+    <select name="type" required>
+        <option value="thermostat">Thermostat</option>
+        <option value="scanner">Scanner</option>
+        <option value="radio">Radio</option>
+        <option value="IRM">IRM</option>
+        <option value="robot_chirurgical">Robot chirurgical</option>
+    </select><br><br>
+
+    <label>Service :</label><br>
+    <select name="service" required>
+        <option value="Urgences">Urgences</option>
+        <option value="Pédiatrie">Pédiatrie</option>
+        <option value="Chirurgie">Chirurgie</option>
+        <option value="Cardiologie">Cardiologie</option>
+    </select><br><br>
+
+    <label>Message (facultatif) :</label><br>
+    <textarea name="message" rows="4" cols="50"></textarea><br><br>
+
+    <button type="submit">📤 Envoyer la demande</button>
+</form>
+
+</body>
+</html>

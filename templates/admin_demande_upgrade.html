@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <title>Ensemble des demandes d'upgrade</title>
+</head>
+<body>
+    <h2>Demandes d'évolution de rôle</h2>
+
+{% if demandes %}
+<table>
+    <thead>
+        <tr>
+            <th>Pseudo</th>
+            <th>Actuel</th>
+            <th>Demandé</th>
+            <th>Message</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in demandes %}
+        <tr>
+            <td>{{ d[1] }}</td>
+            <td>{{ d[2] }}</td>
+            <td>{{ d[3] }}</td>
+            <td>{{ d[4] or "—" }}</td>
+            <td>{{ d[5] }}</td>
+            <td>{{ d[6] }}</td>
+            <td>
+                {% if d[5] == 'en attente' %}
+                <a href="{{ url_for('valider_upgrade', id=d[0]) }}">✅</a>
+                <a href="{{ url_for('refuser_upgrade', id=d[0]) }}">❌</a>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucune demande en attente.</p>
+{% endif %}
+
+</body>
+</html>
