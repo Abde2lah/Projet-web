@@ -342,6 +342,22 @@ def objet(IDobjet):
     conn.close()
     return render_template("objet.html", objet=objet) if objet else ("Objet non trouvé", 404)
 
+@app.route('/objet/<IDobjet>/reload', methods=['POST'])
+def objet_reload(IDobjet):
+    conn = sql.connect("donnees.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Objet WHERE ID = ?", (IDobjet,))
+    objet = cursor.fetchone()
+    temp_target = objet[2]
+
+    cursor.execute("""UPDATE Objet
+                    SET batterie=100, TempActuelle=? WHERE ID=?""", (temp_target, IDobjet,))
+    conn.commit()
+
+    cursor.execute("SELECT * FROM Objet WHERE ID = ?", (IDobjet,))
+    objet = cursor.fetchone()
+    conn.close()
+    return render_template("visualiser_objet.html", objet=objet) if objet else("Objet non trouvé", 404)
 
 @app.route('/profil/<pseudonyme>')
 def profil(pseudonyme):

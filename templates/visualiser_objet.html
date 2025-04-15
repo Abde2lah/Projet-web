@@ -1,11 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Visualiser l'objet {{ objet[0] }}</title>
+    <title>Visualiser l’objet {{ objet[0] }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
 </head>
 <body>
+
+    <div class="navbar">
+        <a href="{{ url_for('accueil')}}">Accueil</a>
+    </div>
+
     <div class="container">
         <h1>Visualiser l'objet n°{{ objet[0] }}</h1>
             <label>Nom : {{ objet[8] }}</label>
@@ -20,6 +26,18 @@
             <label>Dernier réglage : {{ objet[10] }}</label>
             <label>Consommation (L) : {{ objet[11] }} L</label>
             <label>Consommation (W) : {{ objet[12] }} W</label>
+            <label>État : {{ objet[13] }}</label>
+            <label>État de la batterie : {{ objet[14] }}</label>
+            <label>État de la connectivité : {{ objet[15] }}</label>
+            <label>État de la température : {{ objet[16] }}</label>
+            <label>État de l'objet : {{ objet[17] }}</label>
+
+            {% if get_user_type(session['username']) >=2 %}
+        <form action="/objet/{{objet[0] }}/reload" method="post">
+            <button class="btn" type="submit">Recharger l'objet</button>
+        </form>
+
+        {% endif %}
     </div>
     <div>
         <a href="{{ url_for('gestion_ressources') }}" class="btn btn-danger mt-3">Retour à la gestion des ressources</a>

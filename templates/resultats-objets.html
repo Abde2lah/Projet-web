@@ -26,7 +26,7 @@
             <tbody>
                 {% for obj in results %}
                 <tr>
-                    <td data-label="ID"><a href="{{ url_for('objet', IDobjet=obj[0]) }}">{{ obj[0] }}</a></td>
+                    <td data-label="ID"><a href="{{ url_for('visualiser_objet', id=obj[0]) }}">{{ obj[0] }}</a></td>
                     <td data-label="Nom">{{ obj[8] }}</td>
                     <td data-label="Type">{{ obj[9] }}</td>
                     <td data-label="Service">{{ obj[6] }}</td>

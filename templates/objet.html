@@ -19,6 +19,13 @@
         <p>mode : {{ objet[3] }}</p>
         <p>connectivité : {{ objet[4] }}</p>
         <p>batterie : {{ objet[5] }}</p>
+        {% if get_user_type(session['username']) >=2 %}
+        <form action="/objet/{{objet[0] }}/reload" method="post">
+            <button class="btn" type="submit">Recharger l'objet</button>
+        </form>
+
+        {% endif %}
+        
         <p>service :  {{ objet[6] }}</p>
         <p>marque : {{ objet[7] }}</p>
         <p>type : {{ objet[9] }}</p>
