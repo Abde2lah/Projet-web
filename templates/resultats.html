@@ -35,8 +35,11 @@
         {% else %}
         <p>Aucun utilisateur trouvé.</p>
         {% endif %}
-
+        {% if username %}
         <a href="{{ url_for('liste_utilisateurs') }}" class="btn btn-secondary">Retour à la liste général</a>
+        {% else %}
+        <a href="{{ url_for('accueilPublic') }}" class="btn btn-secondary">Retour à l'accueil</a>
+        {% endif %}
     </div>
 </body>
 </html>
