@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>📋 Tableau de bord Administrateur</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/styles.css') }}">
+    <script>
+        function envoyerAction(id, action, type) {
+            fetch(`/admin/${action}_${type}/${id}`)
+                .then(() => location.reload())
+                .catch(err => alert("Erreur lors de l'action."));
+        }
+    </script>
+</head>
+<body class="container py-4">
+    <h1 class="text-center mb-4">📋 Tableau de bord Administrateur</h1>
+    {% for bloc in blocs %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ bloc.title }}</h4>
+            </div>
+            <div class="card-body">
+                {% if bloc.demandes %}
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    {% for header in bloc.headers %}<th>{{ header }}</th>{% endfor %}
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for demande in bloc.demandes %}
+                                <tr>
+                                    {% for val in demande %}<td>{{ val }}</td>{% endfor %}
+                                    <td>
+                                        {% if demande[bloc.statut_index] == 'en attente' %}
+                                            <button class="btn btn-success btn-sm" onclick="envoyerAction({{ demande[0] }}, 'valider', '{{ bloc.type }}')">✅ Valider</button>
+                                            <button class="btn btn-danger btn-sm" onclick="envoyerAction({{ demande[0] }}, 'refuser', '{{ bloc.type }}')">❌ Refuser</button>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Aucune demande pour ce bloc.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    <div class="text-end mt-4">
+        <a href="{{ url_for('gestion_ressources') }}" class="btn btn-outline-secondary">⬅ Retour</a>
+    </div>
+</body>
+</html>

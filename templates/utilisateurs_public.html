@@ -40,7 +40,15 @@
                         <td>{{ user[2] }}</td>
                         <td>{{ user[3] }}</td>
                         <td>{{ user[4] }}</td>
-                        <td>{{ user[6] }}</td>
+                        <td>            
+                            {% if user[6] == 1 %}
+                            Simple
+                            {% elif user[6] == 2 %}
+                            Complexe
+                            {% elif user[6] == 3 %}
+                            Admin
+                            {% endif %}
+                        </td>
                         <td>
                             <img src="{{ user[7] if user[7] else url_for('static', filename='images/default.png') }}" 
                                 alt="Photo de profil" class="img-fluid" style="max-width: 50px; border-radius: 8px;">

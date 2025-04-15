@@ -19,7 +19,15 @@
         <p><strong>Âge:</strong> {{ user[2] }} ans</p>
         <p><strong>Genre:</strong> {{ user[3] }}</p>
         <p><strong>Email:</strong> {{ user[4] }}</p>
-        <p><strong>Type:</strong> {{ user[6] }}</p>
+        <p><strong>Type:</strong> 
+            {% if user[6] == 1 %}
+                Simple
+            {% elif user[6] == 2 %}
+                Complexe
+            {% elif user[6] == 3 %}
+                Admin
+            {% endif %}
+        </p>
         <p><strong>Date de naissance :</strong> {{ user[5] }}</p>
         
         <!-- Affichage de l'image de profil -->

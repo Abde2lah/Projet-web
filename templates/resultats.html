@@ -35,11 +35,12 @@
         {% else %}
         <p>Aucun utilisateur trouvé.</p>
         {% endif %}
-        {% if username %}
-        <a href="{{ url_for('liste_utilisateurs') }}" class="btn btn-secondary">Retour à la liste général</a>
+        {% if session['username'] %}
+        <a href="{{ url_for('liste_utilisateurs') }}" class="btn btn-secondary">Retour à la liste générale</a>
         {% else %}
-        <a href="{{ url_for('accueilPublic') }}" class="btn btn-secondary">Retour à l'accueil</a>
+        <a href="{{ url_for('liste_utilisateurs_public') }}" class="btn btn-secondary">Retour à la liste publique</a>
         {% endif %}
+    
     </div>
 </body>
 </html>
